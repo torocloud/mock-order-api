@@ -1,0 +1,36 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "updateItemInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "itemName"
+                },
+                {
+                    "name": "description"
+                },
+                {
+                    "name": "price",
+                    "type": "double"
+                },
+                {
+                    "name": "itemId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "UPDATE",
+    "query": "UPDATE \"ITEMS\"\n\tSET \"ITEM_NAME\" = COALESCE( :itemName, \"ITEM_NAME\" ),\n\t\t\"ITEM_DESCRIPTION\" = COALESCE( :description, \"ITEM_DESCRIPTION\" ),\n\t\t\"PRICE\" = COALESCE( :price, \"PRICE\" ),\n\t\t\"DATE_UPDATED\" = CURRENT_TIMESTAMP\n\tWHERE ( \"ITEM_ID\" = :itemId )"
+}

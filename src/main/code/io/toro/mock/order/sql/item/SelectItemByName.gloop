@@ -1,0 +1,59 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectItemByNameInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "itemName"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectItemByNameOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "ITEM_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ITEM_NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ITEM_DESCRIPTION",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "PRICE",
+                    "type": "double",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "DATE_CREATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "DATE_UPDATED",
+                    "type": "date",
+                    "required": true
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT *\nFROM\n    \"ITEMS\"\nWHERE (\n    \"ITEM_NAME\" = :itemName\n)"
+}

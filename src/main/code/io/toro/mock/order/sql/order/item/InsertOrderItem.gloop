@@ -1,0 +1,46 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertOrderItemInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "itemId"
+                },
+                {
+                    "name": "orderId"
+                },
+                {
+                    "name": "quantity",
+                    "type": "integer"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"ORDER_ITEMS\" (\n    \"ID\",\n    \"ITEM_ID\",\n    \"ORDER_ID\",\n    \"QUANTITY\"\n)\nVALUES (\n    :id,\n    :itemId,\n    :orderId,\n    :quantity\n)\n"
+}

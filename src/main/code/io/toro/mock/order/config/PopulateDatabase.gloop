@@ -1,0 +1,499 @@
+{
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "comments": "tables = [ customers, orders, items, order_items ]",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "string"
+                                },
+                                {
+                                    "name": "tables",
+                                    "array": true
+                                },
+                                {
+                                    "name": "models",
+                                    "type": "model",
+                                    "allowExtraProperties": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "orders",
+                                            "type": "model",
+                                            "array": true,
+                                            "allowExtraProperties": true,
+                                            "gloopProperties": [
+                                                {
+                                                    "name": "order_id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "customer_id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "status"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "order_items",
+                                            "type": "model",
+                                            "array": true,
+                                            "allowExtraProperties": true,
+                                            "gloopProperties": [
+                                                {
+                                                    "name": "id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "order_id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "item_id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "quantity",
+                                                    "type": "integer"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "items",
+                                            "type": "model",
+                                            "array": true,
+                                            "gloopProperties": [
+                                                {
+                                                    "name": "item_id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "item_name"
+                                                },
+                                                {
+                                                    "name": "item_description"
+                                                },
+                                                {
+                                                    "name": "item_price",
+                                                    "type": "float"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "customers",
+                                            "type": "model",
+                                            "array": true,
+                                            "gloopProperties": [
+                                                {
+                                                    "name": "customer_id",
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "name": "name"
+                                                },
+                                                {
+                                                    "name": "address"
+                                                },
+                                                {
+                                                    "name": "email"
+                                                },
+                                                {
+                                                    "name": "phone_number"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "[ \"customers\", \"orders\", \"items\", \"order_items\" ]",
+                            "evaluate": true,
+                            "to": [
+                                "tables"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "models {\n\torders {\n\t\torder_id null\n\t\tcustomer_id null\n\t\tstatus null\n\t}\n\torder_items {\n\t\tid null\n\t\torder_id null\n\t\titem_id null\n\t\tquantity null\n\t}\n\titems {\n\t\titem_id null\n\t\titem_name null\n\t\titem_description null\n\t\titem_price null\n\t}\n\tcustomers {\n\t\tcustomer_id null\n\t\tname null\n\t\taddress null\n\t\temail null\n\t\tphone_number null\n\t}\n}\n",
+                            "evaluate": true,
+                            "to": [
+                                "models"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "tables"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "comments": "Send an info message to the underlying log engine",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "info",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "\"Inserting dummy data into ${tables} table\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "declare": [
+                                {
+                                    "variables": [
+                                        {
+                                            "name": "inputStream",
+                                            "type": "object",
+                                            "objectClassName": "java.io.InputStream"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "className": "io.toro.martini.FileMethods",
+                            "methodName": "resourceStream",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.String",
+                                "io.toro.gloop.engine.GloopExecutionContext"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "\"resources/${tables}.csv\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "resource"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "inputStream"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "declare": [
+                                {
+                                    "variables": [
+                                        {
+                                            "name": "cursor",
+                                            "type": "model",
+                                            "array": true,
+                                            "allowExtraProperties": true
+                                        }
+                                    ]
+                                }
+                            ],
+                            "className": "io.toro.martini.FlatFileMethods",
+                            "methodName": "getDelimitedFileInputCursor",
+                            "parameters": [
+                                "java.io.InputStream",
+                                "java.lang.String",
+                                "char",
+                                "java.lang.Character",
+                                "java.lang.Character",
+                                "java.lang.Character",
+                                "int",
+                                "boolean",
+                                "boolean",
+                                "boolean",
+                                "java.lang.String",
+                                "java.lang.String",
+                                "io.toro.gloop.object.property.GloopModel",
+                                "java.lang.String[]",
+                                "java.lang.String",
+                                "io.toro.gloop.engine.GloopExecutionContext"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "inputStream"
+                                    ],
+                                    "to": [
+                                        "flatFileData"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "models.\"${tables}\".keySet()",
+                                    "evaluate": true,
+                                    "to": [
+                                        "fieldNames"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "cursor"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "iterate",
+                            "input": {
+                                "path": [
+                                    "cursor"
+                                ]
+                            },
+                            "children": [
+                                {
+                                    "type": "fork",
+                                    "expression": "tables",
+                                    "children": [
+                                        {
+                                            "type": "invokeGloop",
+                                            "label": "customers",
+                                            "name": "io.toro.mock.order.sql.customer.InsertCustomer",
+                                            "inputs": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.customer_id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertCustomerInput",
+                                                        "customerId"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.name",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertCustomerInput",
+                                                        "name"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.address",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertCustomerInput",
+                                                        "address"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.email",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertCustomerInput",
+                                                        "email"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.phone_number",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertCustomerInput",
+                                                        "phoneNumber"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "invokeGloop",
+                                            "label": "orders",
+                                            "name": "io.toro.mock.order.sql.order.InsertOrder",
+                                            "inputs": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.order_id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderInput",
+                                                        "orderId"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.customer_id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderInput",
+                                                        "customerId"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.status",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderInput",
+                                                        "status"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "\"{}\"",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderInput",
+                                                        "customField"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "invokeGloop",
+                                            "label": "items",
+                                            "name": "io.toro.mock.order.sql.item.InsertItem",
+                                            "inputs": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.item_id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertItemInput",
+                                                        "itemId"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.item_name",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertItemInput",
+                                                        "itemName"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.item_description",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertItemInput",
+                                                        "itemDescription"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.item_price",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertItemInput",
+                                                        "price"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "invokeGloop",
+                                            "label": "order_items",
+                                            "name": "io.toro.mock.order.sql.order.item.InsertOrderItem",
+                                            "inputs": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.item_id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderItemInput",
+                                                        "itemId"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.order_id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderItemInput",
+                                                        "orderId"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.id",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderItemInput",
+                                                        "id"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "cursor.quantity",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertOrderItemInput",
+                                                        "quantity"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

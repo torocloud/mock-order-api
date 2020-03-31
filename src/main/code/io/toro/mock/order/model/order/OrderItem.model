@@ -1,0 +1,23 @@
+{
+    "name": "OrderItem",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "id"
+        },
+        {
+            "name": "name"
+        },
+        {
+            "name": "description"
+        },
+        {
+            "name": "price",
+            "type": "float"
+        },
+        {
+            "name": "quantity",
+            "type": "integer"
+        }
+    ]
+}

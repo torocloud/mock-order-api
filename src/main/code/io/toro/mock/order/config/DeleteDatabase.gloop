@@ -1,0 +1,161 @@
+{
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "dbConn"
+                                }
+                            ]
+                        }
+                    ],
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "mock_order_api",
+                            "to": [
+                                "dbConn"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "check if isDebug",
+                    "expression": "'debug.enabled'.getPackageProperty()",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "true",
+                            "comments": "drop all tables",
+                            "children": [
+                                {
+                                    "type": "invokeCode",
+                                    "comments": "Send a warn message to the underlying log engine",
+                                    "className": "io.toro.martini.LoggerMethods",
+                                    "methodName": "warn",
+                                    "parameters": [
+                                        "java.lang.String"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "Dropping all tables in mock-order-api",
+                                            "to": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "className": "io.toro.martini.SqlMethods",
+                                    "methodName": "sql",
+                                    "parameters": [
+                                        "java.lang.String",
+                                        "groovy.lang.Closure"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "dbConn"
+                                            ],
+                                            "to": [
+                                                "poolName"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "{\tsql ->\n\t\tsql.execute ( '''\nDROP TABLE \"ORDER_ITEMS\";\nDROP TABLE \"ITEMS\";\nDROP TABLE \"ORDERS\";\nDROP TABLE \"CUSTOMERS\";\n\t\t''' )\n}",
+                                            "evaluate": true,
+                                            "to": [
+                                                "c"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "className": "io.toro.martini.DatabaseConnectionPoolMethods",
+                                    "methodName": "stopPool",
+                                    "parameters": [
+                                        "java.lang.String"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "dbConn"
+                                            ],
+                                            "to": [
+                                                "name"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "className": "io.toro.martini.DatabaseConnectionPoolMethods",
+                                    "methodName": "deletePool",
+                                    "parameters": [
+                                        "java.lang.String"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "dbConn"
+                                            ],
+                                            "to": [
+                                                "name"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "gloovy",
+                    "comments": "unset the J2EE13Compliance property if database type currently in use is oracle",
+                    "gloovyScript": "if ( 'database.type'.getPackageProperty().equalsIgnoreCase( 'oracle' ) )\n\tSystem.clearProperty( 'oracle.jdbc.J2EE13Compliant' )"
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

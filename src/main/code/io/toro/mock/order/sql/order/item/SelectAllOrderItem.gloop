@@ -1,0 +1,60 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectAllOrderItemInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "orderId",
+                    "type": "object"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectAllOrderItemInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "DESCRIPTION",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "QUANTITY",
+                    "type": "integer",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "PRICE",
+                    "type": "bigDecimal",
+                    "required": true
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT\n    O.\"ITEM_ID\" as \"ID\",\n    I.\"ITEM_NAME\" as \"NAME\",\n    I.\"ITEM_DESCRIPTION\" as \"DESCRIPTION\", \n\tO.\"QUANTITY\" as \"QUANTITY\",\n\tround(CAST(SUM(I.\"PRICE\" * O.\"QUANTITY\") as DECIMAL), 2) as \"PRICE\"\nFROM\n\t\"ORDER_ITEMS\" O JOIN \"ITEMS\" I ON O.\"ITEM_ID\" = I.\"ITEM_ID\"\nWHERE\n\t(O.\"ORDER_ID\" = :orderId)\nGROUP BY\n\tO.\"ITEM_ID\", I.\"ITEM_NAME\", O.\"QUANTITY\", I.\"ITEM_DESCRIPTION\"\n"
+}

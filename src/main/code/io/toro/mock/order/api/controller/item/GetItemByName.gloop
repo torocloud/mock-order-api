@@ -1,0 +1,220 @@
+{
+    "input": [
+        {
+            "name": "itemName"
+        }
+    ],
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "item",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.item.Item"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "name": "io.toro.mock.order.sql.item.SelectItemByName",
+                    "inputs": [
+                        {
+                            "from": [
+                                "itemName"
+                            ],
+                            "to": [
+                                "selectItemByNameInput",
+                                "itemName"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectItemByNameOutput",
+                                "ITEM_ID"
+                            ],
+                            "to": [
+                                "item",
+                                "itemId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemByNameOutput",
+                                "ITEM_NAME"
+                            ],
+                            "to": [
+                                "item",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemByNameOutput",
+                                "ITEM_DESCRIPTION"
+                            ],
+                            "to": [
+                                "item",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemByNameOutput",
+                                "PRICE"
+                            ],
+                            "to": [
+                                "item",
+                                "price"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemByNameOutput",
+                                "DATE_CREATED"
+                            ],
+                            "to": [
+                                "item",
+                                "dateCreated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemByNameOutput",
+                                "DATE_UPDATED"
+                            ],
+                            "to": [
+                                "item",
+                                "dateUpdated"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "Item found?",
+                    "expression": "item?.itemId",
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "label": "$null",
+                            "comments": "If the `itemId` from the `item` Gloop model is null, it means the `SELECT` did not find a matching record, this step also maps the appropriate error response, and logs that the item could not be found",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "warn",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "\"Item with name \\\"${itemName}\\\" not found.\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "If the service encountered an exception while processing the request, map a response code of 500 and the appropriate error message.",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

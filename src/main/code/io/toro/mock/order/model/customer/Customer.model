@@ -1,0 +1,29 @@
+{
+    "name": "Customer",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "customerId"
+        },
+        {
+            "name": "dateCreated",
+            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}"
+        },
+        {
+            "name": "dateUpdated",
+            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}"
+        },
+        {
+            "name": "name"
+        },
+        {
+            "name": "address"
+        },
+        {
+            "name": "email"
+        },
+        {
+            "name": "phoneNumber"
+        }
+    ]
+}

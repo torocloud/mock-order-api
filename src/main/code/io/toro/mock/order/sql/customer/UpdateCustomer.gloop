@@ -1,0 +1,38 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "updateCustomerInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "address"
+                },
+                {
+                    "name": "email"
+                },
+                {
+                    "name": "phoneNumber"
+                },
+                {
+                    "name": "customerId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "UPDATE",
+    "query": "UPDATE \"CUSTOMERS\"\n\tSET \"NAME\" = COALESCE( :name, \"NAME\" ),\n\t\t\"ADDRESS\" = COALESCE( :address, \"ADDRESS\" ),\n\t\t\"EMAIL\" = COALESCE( :email, \"EMAIL\" ),\n\t\t\"PHONE_NUMBER\" = COALESCE( :phoneNumber, \"PHONE_NUMBER\" ),\n\t\t\"DATE_UPDATED\" = CURRENT_TIMESTAMP\n\tWHERE ( \"CUSTOMER_ID\" = :customerId )\n"
+}

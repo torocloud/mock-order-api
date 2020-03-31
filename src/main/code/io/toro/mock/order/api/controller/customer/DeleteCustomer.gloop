@@ -1,0 +1,223 @@
+{
+    "input": [
+        {
+            "name": "customerId"
+        }
+    ],
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Retrieves the customer record to be deleted. To be sent later to the webhook configured in this package, if nay",
+                    "name": "io.toro.mock.order.api.controller.customer.GetCustomer",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "serviceResponse",
+                                    "type": "model",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "responseCode",
+                                            "type": "integer",
+                                            "defaultValue": 200
+                                        },
+                                        {
+                                            "name": "message"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "customerId"
+                            ],
+                            "to": [
+                                "customerId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "responseCode"
+                            ],
+                            "to": [
+                                "serviceResponse",
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "APIResponse",
+                                "message"
+                            ],
+                            "to": [
+                                "serviceResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "Check if the customer is found",
+                    "expression": "serviceResponse.responseCode == 200",
+                    "children": [
+                        {
+                            "type": "invokeGloop",
+                            "label": "true",
+                            "comments": "Execute a `DELETE` query that removes a customer from the mock order API",
+                            "name": "io.toro.mock.order.sql.customer.DeleteCustomer",
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "customerId"
+                                    ],
+                                    "to": [
+                                        "deleteCustomerInput",
+                                        "customerId"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "\"Successfully removed customer with id \\\"${customerId}\\\".\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "SUCCESS",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "204",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "comments": "Else, map an error response",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "responseCode"
+                                    ],
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "message"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "Maps a response code 500 and details about the execption caught and returns as an error response if this service encounterd one",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

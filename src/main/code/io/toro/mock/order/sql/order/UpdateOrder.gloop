@@ -1,0 +1,35 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "updateOrderInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "customerId"
+                },
+                {
+                    "name": "status"
+                },
+                {
+                    "name": "customFields"
+                },
+                {
+                    "name": "orderId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "UPDATE",
+    "query": "UPDATE \"ORDERS\"\n\tSET \"CUSTOMER_ID\" = COALESCE( :customerId, \"CUSTOMER_ID\" ),\n\t\t\"STATUS\" = COALESCE( :status, \"STATUS\" ),\n\t\t\"CUSTOM_FIELDS\" = COALESCE( :customFields, \"CUSTOM_FIELDS\" ),\n\t\t\"DATE_UPDATED\" = CURRENT_TIMESTAMP\n\t\t\tWHERE \"ORDER_ID\" = :orderId"
+}

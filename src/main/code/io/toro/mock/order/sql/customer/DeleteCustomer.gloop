@@ -1,0 +1,26 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "deleteCustomerInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "customerId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "DELETE",
+    "query": "DELETE FROM \"CUSTOMERS\"\n\tWHERE ( \"CUSTOMER_ID\" = :customerId )"
+}

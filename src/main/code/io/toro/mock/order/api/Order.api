@@ -1,0 +1,533 @@
+{
+    "info": {
+        "title": "Mock Order API",
+        "license": {
+            "name": "MIT"
+        },
+        "version": "1.0-SNAPSHOT"
+    },
+    "basePath": "/mock-order-api",
+    "paths": {
+        "/items": {
+            "get": {
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Retrieves a list of all available items for order",
+                "description": "This services will list all the items availalbe for the mock order API",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "body": "item",
+                        "description": "If the request is successful, The API will return all the list of items available"
+                    },
+                    "500": {
+                        "body": "APIResponse",
+                        "description": "The API response that contains the error message if the API encounters an error while processing the request"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.item.ListItem",
+                "responseCodeField": "responseCode"
+            },
+            "post": {
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Create an item",
+                "description": "Create a new item record that will be available for order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "item",
+                    "description": "item"
+                },
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "Depending whether the mock API request was successful or not, it will return a success or error result, with a short summary of the success or error message.\n\n* 201 if the item was created.\n* 400 If there's a duplicate or existing entry for the item you are trying to create.\n* 500 if the API encountered an error while processing the request."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.item.AddItem",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/orders": {
+            "get": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Get all orders.",
+                "description": "This services retrieves a list of all orders.",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "body": "orders",
+                        "description": "If the request is successful, the API returns a list of all orders."
+                    },
+                    "500": {
+                        "body": "APIResponse",
+                        "description": "Response when the API encountered an error while processing the request."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.ListOrders",
+                "responseCodeField": "responseCode"
+            },
+            "post": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Create an order",
+                "description": "This services creates an order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "order",
+                    "description": "order"
+                },
+                "responses": {
+                    "201": {
+                        "body": "APIResponse",
+                        "description": "Depending whether the mock API request was successful or not, it will return a success or error result, with a short summary of the success or error message.\n\n* 201 if the order was created.\n* 400 If there's a duplicate or existing entry for the order you are trying to create.\n* 500 if the API encountered an error while processing the request."
+                    },
+                    "400": {
+                        "body": "APIResponse",
+                        "description": "The response when the request encountered an invalid processing"
+                    },
+                    "500": {
+                        "body": "APIResponse",
+                        "description": "The response if the request encountered an exception while processing the request"
+                    },
+                    "404": {
+                        "body": "APIResponse",
+                        "description": "Response when the "
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.AddOrder",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/customers/{customerId}": {
+            "description": "All operations related to modfying, and retrieving a single customer record",
+            "get": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Get a customer by id",
+                "description": "Retrieves a single customer record by its id.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "customerId",
+                        "type": "PATH",
+                        "description": "The unique identifier for a customer"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "customer",
+                        "description": "Customer details"
+                    },
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default error response. Depending on the error encountered, it will return one from the list of HTTP response codes below:\n\n* 404 if the record does not exist, or could not be found\n* 500 if the service encountered an error while processing the request"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.customer.GetCustomer",
+                "responseCodeField": "responseCode"
+            },
+            "delete": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Delete a customer",
+                "description": "Removes a single customer record ",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "customerId",
+                        "type": "PATH",
+                        "description": "The unique identifier for a customer"
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default API response. Depending whether the delete request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 204 if the record was sucessfully deleted\n* 404 if the record you are trying to delete does not exist\n* 500 if the service encountered an error while processing the request"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.customer.DeleteCustomer",
+                "responseCodeField": "responseCode"
+            },
+            "patch": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Update a customer record",
+                "description": "Updates a single customer record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "customerId",
+                        "type": "PATH",
+                        "description": "The unique identifier for a customer"
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "customer",
+                    "description": "customer"
+                },
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default API response. Depending whether the update request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 200 if the record was successfully updated.\n* 404 if the record you are trying to update does not exist or could not be found\n* 400 if there's a possible duplicate record e.g. same record name\n* 500 if the API encountered an error while processing the request."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.customer.UpdateCustomer",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/customers": {
+            "get": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Get all customer record.",
+                "description": "Retrieves all the customer record",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "body": "customer",
+                        "description": "List of customer"
+                    },
+                    "500": {
+                        "body": "APIResponse",
+                        "description": "The response when the service encountered an error while processing the request"
+                    },
+                    "404": {
+                        "body": "APIResponse",
+                        "description": "Response if the customer is not found"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.customer.ListCustomers"
+            },
+            "post": {
+                "tags": [
+                    "Customer"
+                ],
+                "summary": "Create a new customer",
+                "description": "Adds a new customer record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "customer",
+                    "description": "customer"
+                },
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default API response. Depending whether the request succeeded or failed. It will return one of the following HTTP response codes\n\n* 201 if the customer record was created successfully\n* 400 if there was an SQL constraint violation\n* 500 if the service encountered an error while processing the request"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.customer.AddCustomer",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/items/{itemId}": {
+            "get": {
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Retrieves a single item",
+                "description": "This service will retrieve an item that matches the id provided in the request",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "itemId",
+                        "type": "PATH",
+                        "description": "The unique identifier for an item."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "item",
+                        "description": "If the request is successful, it will return the details of an item in the response."
+                    },
+                    "404": {
+                        "body": "APIResponse",
+                        "description": "If there's no record that matches the id provided, it will return an `APIResponse` that has a message that the item could not be found"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.item.GetItem",
+                "responseCodeField": "responseCode"
+            },
+            "delete": {
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Deletes an item.",
+                "description": "Removes an item from the available items you can order in the mock order API.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "itemId",
+                        "type": "PATH",
+                        "description": "The unique identifier for an item"
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "Depending whether the mock API request was successful or not, it will return a success or error result, with a short summary of the success or error message.\n\n* 204 if the item was successful.\n* 404 If the item requested to be deleted could not be found.\n* 500 if the API encountered an error while processing the request."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.item.DeleteItem",
+                "responseCodeField": "responseCode"
+            },
+            "patch": {
+                "tags": [
+                    "Item"
+                ],
+                "summary": "Update an item",
+                "description": "Updates an item in the mock order API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "itemId",
+                        "type": "PATH",
+                        "description": "The unique identifier of the item to be updated"
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "item",
+                    "description": "item"
+                },
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default API response. Depending whether the update request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 200 if the record was successfully updated.\n* 404 if the record you are trying to update does not exist or could not be found\n* 400 if there's a possible duplicate record e.g. same record name\n* 500 if the API encountered an error while processing the request."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.item.UpdateItem",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/orders/{orderId}": {
+            "summary": "All operations related to modifying or retrieving a single order record",
+            "get": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Get a single order record",
+                "description": "Retrieves an order record using the order id provided in the request",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "type": "PATH",
+                        "description": "The unique identrifier for an order"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "order",
+                        "description": "If the request is successful, it will return the details about a single order"
+                    },
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default error response. Depending on the error encountered, it will return one of the HTTP response codes below:\n\n* 404 if the order was not found, or if there is no existing orders\n* 500 if an errror was encountered while processing the request"
+                    },
+                    "404": {
+                        "body": "APIResponse",
+                        "description": "Response if the order is not found"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.GetOrder",
+                "responseCodeField": "responseCode"
+            },
+            "delete": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Delete an order",
+                "description": "Removes an order record, and also delets the order items associated to the order",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "type": "PATH",
+                        "description": "The unique identifier for an order record"
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default API response. Depending whether the delete request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 204 if the record was sucessfully deleted\n* 404 if the record you are trying to delete does not exist\n* 500 if the service encountered an error while processing the request"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.DeleteOrder",
+                "responseCodeField": "responseCode"
+            },
+            "patch": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Update order details",
+                "description": "Updates details about an order. Currently it only supports changing the customer record associated to the order, adding custom fields, and updating the order status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "type": "PATH",
+                        "description": "A unique identifier for an order"
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "order",
+                    "description": "order"
+                },
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "The default API response. Depending whether the update request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 200 if the record was successfully updated.\n* 404 if the record you are trying to update does not exist or could not be found\n* 400 if there's a possible duplicate record e.g. same record name\n* 500 if the API encountered an error while processing the request."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.UpdateOrder",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/orders/filter": {
+            "summary": "Get a list of order that matches the provided filter",
+            "description": "Retrieves all the order records that matches the query filter in the request url. Currently, it only supports date range",
+            "get": {
+                "tags": [
+                    "Order"
+                ],
+                "description": "Get orders by date",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "dateFrom",
+                        "type": "QUERY",
+                        "description": "from start date"
+                    },
+                    {
+                        "name": "dateTo",
+                        "type": "QUERY",
+                        "description": "to end date"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "orders",
+                        "description": "List of order"
+                    },
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "API response"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.ListOrderByDate",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/orders/{orderId}/status/{status}": {
+            "patch": {
+                "tags": [
+                    "Order"
+                ],
+                "summary": "Set an order's status",
+                "description": "Updates the status of an order using . Allowed values are:\n\n* NEW\n* PROCESSING\n* PENDING\n* BACK_ORDER\n* COMPLETED\n* SHIPPED",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "orderId",
+                        "type": "PATH",
+                        "description": "id of the order"
+                    },
+                    {
+                        "name": "status",
+                        "type": "PATH",
+                        "description": "new status of the order"
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "APIResponse",
+                        "description": "Depending whether the request succeeded or failed, it will return an appropriate error message with the appropriate response codes:\n\n* 404 if the order could not be found, or does not exists\n* 500 if an error was encountered while processing the request"
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.order.api.controller.order.UpdateOrderStatus",
+                "responseCodeField": "responseCode"
+            }
+        }
+    },
+    "externalDocumentation": {
+        "url": "https://docs.torocloud.com/integrate/tutorials/tutorials-case-studies/mock-order-api/"
+    }
+}

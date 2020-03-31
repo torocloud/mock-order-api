@@ -1,0 +1,238 @@
+{
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "customer",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.order.model.customer.Customer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Executes a `SELECT` query that pulls all the customer record in the database",
+                    "name": "io.toro.mock.order.sql.customer.SelectAllCustomer",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "selectAllCustomerOutputCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "CUSTOMER_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "DATE_CREATED",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "DATE_UPDATED",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "NAME",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "ADDRESS",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "EMAIL",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "PHONE_NUMBER",
+                                            "required": true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectAllCustomerInputCursor"
+                            ],
+                            "to": [
+                                "selectAllCustomerOutputCursor"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "Iterates through the output cursor from the previous step, and then maps it to the `customers` Gloop model array",
+                    "input": {
+                        "path": [
+                            "selectAllCustomerOutputCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "customer"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "comments": "Map each cursor record to a single `customers` element",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "CUSTOMER_ID"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "customerId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "DATE_CREATED"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "dateCreated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "DATE_UPDATED"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "dateUpdated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "NAME"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "ADDRESS"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "address"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "EMAIL"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "email"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllCustomerOutputCursor",
+                                        "PHONE_NUMBER"
+                                    ],
+                                    "to": [
+                                        "customer",
+                                        "phoneNumber"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "Map an error response if the service encountered an error while processing the request",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

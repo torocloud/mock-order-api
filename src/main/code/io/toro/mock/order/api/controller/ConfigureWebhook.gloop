@@ -1,0 +1,205 @@
+{
+    "comments": "Configure webhook, the url will be hit by the POST methods in order api. Make sure to have the following inputs in you Wehook URL\n\nString method,\nObject jsonBody",
+    "input": [
+        {
+            "name": "url",
+            "comments": "Webhook url"
+        }
+    ],
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "result",
+                    "defaultValue": "ERROR",
+                    "choices": [
+                        "ERROR",
+                        "SUCCESS"
+                    ]
+                },
+                {
+                    "name": "message",
+                    "defaultValue": "Incorrect input format"
+                }
+            ]
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "fork",
+                    "comments": "Check if the webhook url that will be saved matches the required pattern",
+                    "expression": "url.matches( 'https?:\\\\/\\\\/(www\\\\\\\\.)?[-a-zA-Z0-9@:%._\\\\\\\\+~#=]{2,256}\\\\b([-a-zA-Z0-9@:%_\\\\+.~#!?&//=]*)' )",
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "label": "true",
+                            "comments": "If it matches the required pattern, save the webhook url to the current package context",
+                            "className": "io.toro.martini.GroovyMethods",
+                            "methodName": "savePackageProperty",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "url"
+                                    ],
+                                    "to": [
+                                        "value"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "webhookurl",
+                                    "to": [
+                                        "key"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "SUCCESS",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "Successfully configured webhook!",
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "200",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "label": "false",
+                            "comments": "if it does not match the required pattern, set the response code to 400, and then map an error response",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "warn",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "Incorrent input format",
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "400",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "If the service encountered an exception while processing the request, set the response code to 500 and then map an error response",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

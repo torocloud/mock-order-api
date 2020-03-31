@@ -1,0 +1,67 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectOrdersInRangeInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "dateFrom",
+                    "type": "date"
+                },
+                {
+                    "name": "dateTo",
+                    "type": "date"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectOrdersInRangeInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "ORDER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOMER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "STATUS",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOM_FIELDS",
+                    "required": true
+                },
+                {
+                    "name": "DATE_CREATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "DATE_UPDATED",
+                    "type": "date",
+                    "required": true
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT * FROM \"ORDERS\"\n\tWHERE \"DATE_CREATED\" BETWEEN :dateFrom AND :dateTo\n"
+}

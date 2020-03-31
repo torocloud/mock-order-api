@@ -1,0 +1,26 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "deleteItemInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "itemId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "DELETE",
+    "query": "DELETE FROM  \"ITEMS\"\n\tWHERE ( \"ITEM_ID\" = :itemId )"
+}

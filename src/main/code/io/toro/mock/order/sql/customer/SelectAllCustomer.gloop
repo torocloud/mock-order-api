@@ -1,0 +1,65 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectAllCustomerInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectAllCustomerInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "CUSTOMER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ADDRESS",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "EMAIL",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "PHONE_NUMBER",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "DATE_CREATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "DATE_UPDATED",
+                    "type": "date",
+                    "required": true
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT * FROM \"CUSTOMERS\""
+}

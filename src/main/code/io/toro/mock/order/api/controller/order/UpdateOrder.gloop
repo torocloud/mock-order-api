@@ -1,0 +1,382 @@
+{
+    "comments": "Update order details",
+    "input": [
+        {
+            "name": "orderId",
+            "required": true,
+            "comments": "id of the order"
+        },
+        {
+            "name": "order",
+            "type": "model",
+            "comments": "new body of the order",
+            "gloopProperties": [
+                {
+                    "name": "status",
+                    "choices": [
+                        "NEW",
+                        "PROCESSING",
+                        "PENDING",
+                        "BACK_ORDER",
+                        "COMPLETED",
+                        "SHIPPED"
+                    ]
+                },
+                {
+                    "name": "customer",
+                    "type": "model",
+                    "gloopProperties": [
+                        {
+                            "name": "customerId"
+                        }
+                    ]
+                },
+                {
+                    "name": "customFields",
+                    "type": "model",
+                    "allowExtraProperties": true
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        }
+    ],
+    "bodyParameter": "order",
+    "paths": [
+        "/orders/update-order/{orderId}"
+    ],
+    "methods": [
+        "POST"
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Check if the order being requested exists, by pulling the record from the database",
+                    "name": "io.toro.mock.order.api.controller.order.GetOrder",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "serviceResponse",
+                                    "type": "model",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "responseCode",
+                                            "type": "integer",
+                                            "defaultValue": 200
+                                        },
+                                        {
+                                            "name": "message"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "tempCustomField",
+                                    "type": "model",
+                                    "allowExtraProperties": true
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "orderId"
+                            ],
+                            "to": [
+                                "orderId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "responseCode"
+                            ],
+                            "to": [
+                                "serviceResponse",
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "APIResponse",
+                                "message"
+                            ],
+                            "to": [
+                                "serviceResponse",
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "order",
+                                "customFields"
+                            ],
+                            "to": [
+                                "tempCustomField"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "Is the order record found?",
+                    "expression": "serviceResponse.responseCode == 200",
+                    "children": [
+                        {
+                            "type": "invokeGloop",
+                            "label": "true",
+                            "comments": "Execute an UPDATE query with the fields that needs updating",
+                            "name": "io.toro.mock.order.sql.order.UpdateOrder",
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "orderId"
+                                    ],
+                                    "to": [
+                                        "updateOrderInput",
+                                        "orderId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "order",
+                                        "status"
+                                    ],
+                                    "to": [
+                                        "updateOrderInput",
+                                        "status"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "order",
+                                        "customer",
+                                        "customerId"
+                                    ],
+                                    "to": [
+                                        "updateOrderInput",
+                                        "customerId"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "order.customFields.isNullValue()? \"{}\" : order.customFields.asJson(false, false)",
+                                    "evaluate": true,
+                                    "to": [
+                                        "updateOrderInput",
+                                        "customFields"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "\"Successfully updated of order with id \\\"${orderId}\\\".\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "SUCCESS",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "200",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "unload": [
+                                [
+                                    "serviceResponse"
+                                ],
+                                [
+                                    "tempCustomField"
+                                ]
+                            ],
+                            "lines": [
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "message"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "responseCode"
+                                    ],
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "fork",
+                    "comments": "Is the exception caught an SQL constraint violation?",
+                    "expression": "$gloopException.message.contains( 'java.sql.SQLIntegrityConstraintViolationException' )",
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "label": "true",
+                            "comments": "If the exception caught was an SQL constraint violation, set the response code to 400",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "error",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.Throwable"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "realException"
+                                    ],
+                                    "to": [
+                                        "throwable"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "gloopStackTrace"
+                                    ],
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "400",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "$gloopException.message",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "label": "false",
+                            "comments": "else, set the response code to 500",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "error",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.Throwable"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "realException"
+                                    ],
+                                    "to": [
+                                        "throwable"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "gloopStackTrace"
+                                    ],
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "500",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "$gloopException.message",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

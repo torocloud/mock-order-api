@@ -1,0 +1,63 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectCustomerInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "customerId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectCustomerOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "CUSTOMER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ADDRESS",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "EMAIL",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "PHONE_NUMBER",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "DATE_CREATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "DATE_UPDATED",
+                    "type": "date",
+                    "required": true
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT * FROM \"CUSTOMERS\"\n\tWHERE ( \"CUSTOMER_ID\" = :customerId )"
+}

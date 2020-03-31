@@ -1,0 +1,97 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectAllOrdersByDateInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "dateFrom",
+                    "type": "date"
+                },
+                {
+                    "name": "dateTo",
+                    "type": "date"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectAllOrdersByDateInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "CUSTOMER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOMER_DATE_CREATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "CUSTOMER_DATE_UPDATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "CUSTOMER_NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOMER_ADDRESS",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOMER_EMAIL",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOMER_PHONE_NUMBER",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ORDER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ORDER_DATE_CREATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "ORDER_DATE_UPDATED",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "STATUS",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "CUSTOM_FIELDS",
+                    "required": true
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT C.\"CUSTOMER_ID\" as \"CUSTOMER_ID\",\n\tC.\"DATE_CREATED\" as \"CUSTOMER_DATE_CREATED\",\n\tC.\"DATE_CREATED\" as \"CUSTOMER_DATE_UPDATED\",\n\tC.\"NAME\" as \"CUSTOMER_NAME\",\n\tC.\"ADDRESS\" as \"CUSTOMER_ADDRESS\",\n\tC.\"EMAIL\" as \"CUSTOMER_EMAIL\",\n\tC.\"PHONE_NUMBER\" as \"CUSTOMER_PHONE_NUMBER\",\n\tO.\"ORDER_ID\" as \"ORDER_ID\",\n\tO.\"DATE_CREATED\" as \"ORDER_DATE_CREATED\",\n\tO.\"DATE_UPDATED\" as \"ORDER_DATE_UPDATED\",\n\tO.\"STATUS\" as \"STATUS\",\n\tO.\"CUSTOM_FIELDS\" as \"CUSTOM_FIELDS\"\n\t\tFROM \"ORDERS\" as O \n\t\t\tINNER JOIN \"CUSTOMERS\" as C \n\t\t\t\tON C.\"CUSTOMER_ID\" = O.\"CUSTOMER_ID\"\n\t\t\t\t\tWHERE (O.\"DATE_CREATED\" BETWEEN :dateFrom AND :dateTo) \n\t\t\t\t\t\tOR (O.\"DATE_UPDATED\" BETWEEN :dateFrom AND :dateTo)"
+}

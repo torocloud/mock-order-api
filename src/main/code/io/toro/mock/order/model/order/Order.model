@@ -1,0 +1,48 @@
+{
+    "name": "Order",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "orderId"
+        },
+        {
+            "name": "dateCreated",
+            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}"
+        },
+        {
+            "name": "dateUpdated",
+            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}"
+        },
+        {
+            "name": "status",
+            "choices": [
+                "NEW",
+                "PROCESSING",
+                "PENDING",
+                "BACK_ORDER",
+                "COMPLETED",
+                "SHIPPED"
+            ]
+        },
+        {
+            "name": "totalPrice",
+            "type": "double"
+        },
+        {
+            "name": "customer",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.customer.Customer"
+        },
+        {
+            "name": "orderItems",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.order.model.order.OrderItem"
+        },
+        {
+            "name": "customFields",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ]
+}

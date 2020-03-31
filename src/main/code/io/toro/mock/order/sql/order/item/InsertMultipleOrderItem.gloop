@@ -1,0 +1,53 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertMultipleOrderItemInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$batchSize",
+                    "type": "integer"
+                },
+                {
+                    "name": "$parentJDBCBatchCursor",
+                    "type": "object",
+                    "objectClassName": "io.toro.gloop.cursor.jdbc.JDBCBatchGloopCursor"
+                },
+                {
+                    "name": "getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "insertMultipleOrderItemOutputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "itemId"
+                },
+                {
+                    "name": "orderId"
+                },
+                {
+                    "name": "quantity",
+                    "type": "integer"
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "INSERT_BATCH",
+    "query": "INSERT INTO \"ORDER_ITEMS\" (\n    \"ID\",\n    \"ITEM_ID\",\n    \"ORDER_ID\",\n    \"QUANTITY\"\n)\nVALUES (\n    :id,\n    :itemId,\n    :orderId,\n    :quantity\n)\n"
+}

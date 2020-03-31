@@ -1,0 +1,233 @@
+{
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "item",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.order.model.item.Item"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Executes a `SELECT` query that pulls all the item record in the database",
+                    "name": "io.toro.mock.order.sql.item.SelectAllItem",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "selectAllItemOutputCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "ITEM_ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "ITEM_NAME",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "ITEM_DESCRIPTION",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "PRICE",
+                                            "type": "float",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "DATE_CREATED",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "DATE_UPDATED",
+                                            "type": "date",
+                                            "required": true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllItemInputCursor"
+                            ],
+                            "to": [
+                                "selectAllItemOutputCursor"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "iterate over the output cursor from the previous step",
+                    "input": {
+                        "path": [
+                            "selectAllItemOutputCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "item"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "comments": "Map the properties to the appropriate properties in the `item` model",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "ITEM_ID"
+                                    ],
+                                    "to": [
+                                        "item",
+                                        "itemId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "DATE_CREATED"
+                                    ],
+                                    "to": [
+                                        "item",
+                                        "dateCreated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "DATE_UPDATED"
+                                    ],
+                                    "to": [
+                                        "item",
+                                        "dateUpdated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "ITEM_NAME"
+                                    ],
+                                    "to": [
+                                        "item",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "ITEM_DESCRIPTION"
+                                    ],
+                                    "to": [
+                                        "item",
+                                        "description"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "PRICE"
+                                    ],
+                                    "to": [
+                                        "item",
+                                        "price"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "If the service encountered an exception while processing the request, map a response code of 500 and the appropriate error message.",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

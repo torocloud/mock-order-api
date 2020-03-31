@@ -1,0 +1,545 @@
+{
+    "comments": "Get orders by date",
+    "input": [
+        {
+            "name": "dateFrom",
+            "type": "date",
+            "outputExpression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( val )",
+            "defaultValue": "now",
+            "comments": "from start date",
+            "dateFormats": [
+                "yyyy-MM-dd HH:mm:ss"
+            ]
+        },
+        {
+            "name": "dateTo",
+            "type": "date",
+            "outputExpression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( val )",
+            "defaultValue": "now",
+            "comments": "to end date",
+            "dateFormats": [
+                "yyyy-MM-dd HH:mm:ss"
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "orders",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.order.model.order.Order"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Executes a SELECT query that filters all the orders created starting from `dateFrom` upto `date",
+                    "name": "io.toro.mock.order.sql.order.SelectAllOrdersByDate",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "selectAllOrdersOutputCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "customer_id",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "customer_date_created",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "customer_date_updated",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "customer_name",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "customer_address",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "customer_email",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "customer_phone_number",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "order_id",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "order_date_created",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "order_date_updated",
+                                            "type": "date",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "status",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "custom_fields",
+                                            "required": true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( dateFrom )",
+                            "evaluate": true,
+                            "to": [
+                                "selectAllOrdersByDateInput",
+                                "dateFrom"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( dateTo )",
+                            "evaluate": true,
+                            "to": [
+                                "selectAllOrdersByDateInput",
+                                "dateTo"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "SelectAllOrdersByDateOutputCursor"
+                            ],
+                            "to": [
+                                "selectAllOrdersOutputCursor"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "iterates over the output cursor returned by querying all the orders that is returned by the previous step, then maps it to the orders Gloop model",
+                    "input": {
+                        "path": [
+                            "selectAllOrdersOutputCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "orders"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "comments": "maps each cusor record to the orders Gloop model",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "order_id"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "orderId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "order_date_created"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "dateCreated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "order_date_updated"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "dateUpdated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "status"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "status"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_phone_number"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "phoneNumber"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_email"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "email"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_address"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "address"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_name"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_date_updated"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "dateUpdated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_date_created"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "dateCreated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "customer_id"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customer",
+                                        "customerId"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "0",
+                                    "to": [
+                                        "orders",
+                                        "totalPrice"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "comments": "Convert the custom_fields column to Gloop model, and then map it to the custom field property in the orders model",
+                            "className": "io.toro.martini.JsonMethods",
+                            "methodName": "jsonStringToGloopObject",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "custom_fields"
+                                    ],
+                                    "to": [
+                                        "jsonString"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "orders",
+                                        "customFields"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeGloop",
+                            "comments": "Retrieves all order items for the current order being mapped",
+                            "name": "io.toro.mock.order.sql.order.item.SelectAllOrderItem",
+                            "declare": [
+                                {
+                                    "variables": [
+                                        {
+                                            "name": "selectAllOrderItemOutputCursor",
+                                            "type": "model",
+                                            "array": true,
+                                            "gloopProperties": [
+                                                {
+                                                    "name": "id",
+                                                    "required": true,
+                                                    "allowNull": false
+                                                },
+                                                {
+                                                    "name": "name",
+                                                    "required": true,
+                                                    "allowNull": false
+                                                },
+                                                {
+                                                    "name": "description",
+                                                    "required": true,
+                                                    "allowNull": false
+                                                },
+                                                {
+                                                    "name": "quantity",
+                                                    "type": "integer",
+                                                    "required": true,
+                                                    "allowNull": false
+                                                },
+                                                {
+                                                    "name": "price",
+                                                    "type": "double",
+                                                    "required": true
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "selectAllOrdersOutputCursor",
+                                        "order_id"
+                                    ],
+                                    "to": [
+                                        "selectAllOrderItemInput",
+                                        "orderId"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "SelectAllOrderItemOutputCursor"
+                                    ],
+                                    "to": [
+                                        "selectAllOrderItemOutputCursor"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "iterate",
+                            "comments": "Iterates through the order item cursor and then maps it to the order items array in the orders Gloop model",
+                            "input": {
+                                "path": [
+                                    "selectAllOrderItemOutputCursor"
+                                ]
+                            },
+                            "output": {
+                                "path": [
+                                    "orders",
+                                    "orderItems"
+                                ]
+                            },
+                            "children": [
+                                {
+                                    "comments": "map a single cursor record to the order items property in orders Gloop model",
+                                    "lines": [
+                                        {
+                                            "from": [
+                                                "selectAllOrderItemOutputCursor",
+                                                "id"
+                                            ],
+                                            "to": [
+                                                "orders",
+                                                "orderItems",
+                                                "id"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "selectAllOrderItemOutputCursor",
+                                                "name"
+                                            ],
+                                            "to": [
+                                                "orders",
+                                                "orderItems",
+                                                "name"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "selectAllOrderItemOutputCursor",
+                                                "description"
+                                            ],
+                                            "to": [
+                                                "orders",
+                                                "orderItems",
+                                                "description"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "selectAllOrderItemOutputCursor",
+                                                "price"
+                                            ],
+                                            "to": [
+                                                "orders",
+                                                "orderItems",
+                                                "price"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "selectAllOrderItemOutputCursor",
+                                                "quantity"
+                                            ],
+                                            "to": [
+                                                "orders",
+                                                "orderItems",
+                                                "quantity"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "orders.totalPrice += selectAllOrderItemOutputCursor.price",
+                                            "evaluate": true,
+                                            "to": [
+                                                "orders",
+                                                "totalPrice"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "If the service encounters an exception while processing the request, set the response code to 500 and then map an error response",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

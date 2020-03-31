@@ -1,0 +1,275 @@
+{
+    "input": [
+        {
+            "name": "orderId",
+            "required": true,
+            "comments": "id of the order"
+        }
+    ],
+    "output": [
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        }
+    ],
+    "paths": [
+        "/orders/delete-order/{orderId}"
+    ],
+    "methods": [
+        "DELETE"
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Get order by ID",
+                    "name": "io.toro.mock.order.api.controller.order.GetOrder",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "jsonBody",
+                                    "type": "model",
+                                    "allowExtraProperties": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "order",
+                                            "type": "model",
+                                            "reference": "io.toro.mock.order.model.order.Order"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "serviceResponse",
+                                    "type": "model",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "responseCode",
+                                            "type": "integer",
+                                            "defaultValue": 200
+                                        },
+                                        {
+                                            "name": "message"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "orderId"
+                            ],
+                            "to": [
+                                "orderId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "order"
+                            ],
+                            "to": [
+                                "jsonBody",
+                                "order"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "responseCode"
+                            ],
+                            "to": [
+                                "serviceResponse",
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "APIResponse",
+                                "message"
+                            ],
+                            "to": [
+                                "serviceResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "Is the order found?",
+                    "expression": "serviceResponse.responseCode == 200",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "true",
+                            "comments": "if found",
+                            "children": [
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "Remove the associated order items to the order first",
+                                    "name": "io.toro.mock.order.sql.order.item.DeleteMultipleOrderItem",
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "orderId"
+                                            ],
+                                            "to": [
+                                                "deleteMultipleOrderItemInput",
+                                                "orderId"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "and then delete the order record from the orders table in the database",
+                                    "name": "io.toro.mock.order.sql.order.DeleteOrder",
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "orderId"
+                                            ],
+                                            "to": [
+                                                "deleteOrderInput",
+                                                "orderId"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "APIResponse",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Successfully deleted order with id ${orderId}.\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "APIResponse",
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "204",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "comments": "else, map an error response",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "responseCode"
+                                    ],
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "message"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "If the service encountered an exception while processing the request, set the response code to 500 and map an error response.",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

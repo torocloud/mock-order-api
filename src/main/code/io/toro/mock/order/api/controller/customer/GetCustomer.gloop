@@ -1,0 +1,239 @@
+{
+    "input": [
+        {
+            "name": "customerId",
+            "allowNull": false
+        }
+    ],
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "customer",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.customer.Customer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "Executes a `SELECT` query retrieving a customer record that matches the `customerId` provided in this request, and them maps the record to the `customer` Gloop model to display infomation about a customer",
+                    "name": "io.toro.mock.order.sql.customer.SelectCustomer",
+                    "inputs": [
+                        {
+                            "from": [
+                                "customerId"
+                            ],
+                            "to": [
+                                "selectCustomerInput",
+                                "customerId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "CUSTOMER_ID"
+                            ],
+                            "to": [
+                                "customer",
+                                "customerId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "DATE_CREATED"
+                            ],
+                            "to": [
+                                "customer",
+                                "dateCreated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "DATE_UPDATED"
+                            ],
+                            "to": [
+                                "customer",
+                                "dateUpdated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "NAME"
+                            ],
+                            "to": [
+                                "customer",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "ADDRESS"
+                            ],
+                            "to": [
+                                "customer",
+                                "address"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "EMAIL"
+                            ],
+                            "to": [
+                                "customer",
+                                "email"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "PHONE_NUMBER"
+                            ],
+                            "to": [
+                                "customer",
+                                "phoneNumber"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "Check if a match is found",
+                    "expression": "customer?.customerId",
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "label": "$null",
+                            "comments": "If no records found, map a 404 response code and then map an error response",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "warn",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "\"Customer with id \\\"${customerId}\\\" not found.\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "If the service encountered an error while processing the request,they can ask helpij ",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.message",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

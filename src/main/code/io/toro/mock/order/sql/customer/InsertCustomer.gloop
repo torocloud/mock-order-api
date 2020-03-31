@@ -1,0 +1,48 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertCustomerInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "customerId"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "address"
+                },
+                {
+                    "name": "email"
+                },
+                {
+                    "name": "phoneNumber"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"CUSTOMERS\" ( \"CUSTOMER_ID\", \"NAME\", \"ADDRESS\", \"EMAIL\", \"PHONE_NUMBER\" ) \nVALUES ( :customerId, :name, :address, :email, :phoneNumber )"
+}

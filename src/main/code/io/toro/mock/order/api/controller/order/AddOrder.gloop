@@ -1,0 +1,596 @@
+{
+    "comments": "Add order",
+    "input": [
+        {
+            "name": "order",
+            "type": "model",
+            "comments": "body of the order",
+            "gloopProperties": [
+                {
+                    "name": "status",
+                    "defaultValue": "NEW",
+                    "choices": [
+                        "NEW",
+                        "PROCESSING",
+                        "PENDING",
+                        "BACK_ORDER",
+                        "COMPLETED",
+                        "SHIPPED"
+                    ]
+                },
+                {
+                    "name": "customer",
+                    "type": "model",
+                    "gloopProperties": [
+                        {
+                            "name": "customerId",
+                            "required": true
+                        }
+                    ]
+                },
+                {
+                    "name": "orderItem",
+                    "type": "model",
+                    "array": true,
+                    "gloopProperties": [
+                        {
+                            "name": "itemId"
+                        },
+                        {
+                            "name": "quantity",
+                            "type": "integer"
+                        }
+                    ]
+                },
+                {
+                    "name": "customField",
+                    "type": "model",
+                    "allowExtraProperties": true
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "responseCode",
+            "type": "integer",
+            "defaultValue": 200
+        },
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        }
+    ],
+    "steps": [
+        {
+            "type": "invokeGloop",
+            "comments": "Check if the customer being associated to the order that is about to be created exists",
+            "name": "io.toro.mock.order.api.controller.customer.GetCustomer",
+            "declare": [
+                {
+                    "variables": [
+                        {
+                            "name": "serviceResponse",
+                            "type": "model",
+                            "gloopProperties": [
+                                {
+                                    "name": "responseCode",
+                                    "type": "integer",
+                                    "defaultValue": 200
+                                },
+                                {
+                                    "name": "message"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "orderId"
+                        }
+                    ]
+                }
+            ],
+            "inputs": [
+                {
+                    "from": [
+                        "order",
+                        "customer",
+                        "customerId"
+                    ],
+                    "to": [
+                        "customerId"
+                    ]
+                }
+            ],
+            "outputs": [
+                {
+                    "from": [
+                        "responseCode"
+                    ],
+                    "to": [
+                        "serviceResponse",
+                        "responseCode"
+                    ]
+                },
+                {
+                    "from": [
+                        "APIResponse",
+                        "message"
+                    ],
+                    "to": [
+                        "serviceResponse",
+                        "message"
+                    ]
+                },
+                {
+                    "type": "set",
+                    "expression": "UUID.randomUUID()",
+                    "evaluate": true,
+                    "to": [
+                        "orderId"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "fork",
+                    "comments": "Does the customer record exists?",
+                    "expression": "serviceResponse.responseCode == 200",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "true",
+                            "comments": "if customer exists",
+                            "children": [
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "Executes an `INSERT` query that inserts a new order record into the database",
+                                    "name": "io.toro.mock.order.sql.order.InsertOrder",
+                                    "unload": [
+                                        [
+                                            "serviceResponse"
+                                        ]
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "order",
+                                                "customer",
+                                                "customerId"
+                                            ],
+                                            "to": [
+                                                "insertOrderInput",
+                                                "customerId"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "order",
+                                                "status"
+                                            ],
+                                            "to": [
+                                                "insertOrderInput",
+                                                "status"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "orderId"
+                                            ],
+                                            "to": [
+                                                "insertOrderInput",
+                                                "orderId"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "order.customField.isNullValue()? \"{}\" : order.customField.asJson(false, false)",
+                                            "evaluate": true,
+                                            "to": [
+                                                "insertOrderInput",
+                                                "customField"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "APIResponse",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "201",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Successfully created Order with id \\\"${orderId}\\\".\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "APIResponse",
+                                                "message"
+                                            ],
+                                            "priority": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "Generates an output cursor that will allow you to do a batch insert for the ",
+                                    "name": "io.toro.mock.order.sql.order.item.InsertMultipleOrderItem",
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "insertMultipleOrderItemOutputCursor",
+                                                    "type": "model",
+                                                    "array": true,
+                                                    "gloopProperties": [
+                                                        {
+                                                            "name": "id",
+                                                            "type": "object"
+                                                        },
+                                                        {
+                                                            "name": "itemId",
+                                                            "type": "object"
+                                                        },
+                                                        {
+                                                            "name": "orderId",
+                                                            "type": "object"
+                                                        },
+                                                        {
+                                                            "name": "quantity",
+                                                            "type": "object"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "order.orderItem.size()",
+                                            "evaluate": true,
+                                            "to": [
+                                                "insertMultipleOrderItemInput",
+                                                "$batchSize"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "from": [
+                                                "insertMultipleOrderItemOutputCursor"
+                                            ],
+                                            "to": [
+                                                "insertMultipleOrderItemOutputCursor"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "iterate",
+                                    "comments": "Iterates through the order items, then maps it to the output cursor from the previous step. Doing this will add it to the batch to be executed",
+                                    "input": {
+                                        "path": [
+                                            "order",
+                                            "orderItem"
+                                        ]
+                                    },
+                                    "output": {
+                                        "path": [
+                                            "insertMultipleOrderItemOutputCursor"
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "comments": "map the order items to be process to `insertMultipleOrderItemOutputCursor`",
+                                            "lines": [
+                                                {
+                                                    "from": [
+                                                        "order",
+                                                        "orderItem",
+                                                        "itemId"
+                                                    ],
+                                                    "to": [
+                                                        "insertMultipleOrderItemOutputCursor",
+                                                        "itemId"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "orderId"
+                                                    ],
+                                                    "to": [
+                                                        "insertMultipleOrderItemOutputCursor",
+                                                        "orderId"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "order",
+                                                        "orderItem",
+                                                        "quantity"
+                                                    ],
+                                                    "to": [
+                                                        "insertMultipleOrderItemOutputCursor",
+                                                        "quantity"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "UUID.randomUUID().toString()",
+                                                    "evaluate": true,
+                                                    "to": [
+                                                        "insertMultipleOrderItemOutputCursor",
+                                                        "id"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "Get the created order, map it to a Gloop model called jsonBody, and then send it to the configured webhook",
+                                    "name": "io.toro.mock.order.api.controller.order.GetOrder",
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "jsonBody",
+                                                    "type": "model",
+                                                    "gloopProperties": [
+                                                        {
+                                                            "name": "order",
+                                                            "type": "model",
+                                                            "reference": "io.toro.mock.order.model.order.Order"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "unload": [
+                                        [
+                                            "insertMultipleOrderItemOutputCursor"
+                                        ],
+                                        [
+                                            "orderId"
+                                        ]
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "orderId"
+                                            ],
+                                            "to": [
+                                                "orderId"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "from": [
+                                                "order"
+                                            ],
+                                            "to": [
+                                                "jsonBody",
+                                                "order"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "comments": "If customer does not exist, map an error response",
+                            "unload": [
+                                [
+                                    "serviceResponse"
+                                ]
+                            ],
+                            "lines": [
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "message"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "serviceResponse",
+                                        "responseCode"
+                                    ],
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.gloopStackTrace",
+                            "evaluate": true,
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "Remove the inserted order",
+                    "name": "io.toro.mock.order.api.controller.order.DeleteOrder",
+                    "inputs": [
+                        {
+                            "from": [
+                                "orderId"
+                            ],
+                            "to": [
+                                "orderId"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "comments": "Is the exception caught an SQL constraint violation?",
+                    "expression": "$gloopException.message.contains( 'java.sql.SQLIntegrityConstraintViolationException' )",
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "label": "true",
+                            "comments": "If the exception caught was an SQL constraint violation, set the response code to 400",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "error",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.Throwable"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "realException"
+                                    ],
+                                    "to": [
+                                        "throwable"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "gloopStackTrace"
+                                    ],
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "400",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "$gloopException.message",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "label": "false",
+                            "comments": "else, set the response code to 500",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "error",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.Throwable"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "message"
+                                    ],
+                                    "to": [
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "realException"
+                                    ],
+                                    "to": [
+                                        "throwable"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "500",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "$gloopException.message",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

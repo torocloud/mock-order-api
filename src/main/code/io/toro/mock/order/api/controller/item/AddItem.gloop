@@ -1,0 +1,260 @@
+{
+    "comments": "### Add a new item\n\nThis service creates a new item for the order API. The item created will be available to add as an `orderItem` when creating a new order.",
+    "input": [
+        {
+            "name": "item",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "name",
+                    "allowNull": false
+                },
+                {
+                    "name": "description"
+                },
+                {
+                    "name": "price",
+                    "type": "float",
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "comments": "Generates a random uuid that will be used as a unique identifier for the item record",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "itemId"
+                                }
+                            ]
+                        }
+                    ],
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "UUID.randomUUID()",
+                            "evaluate": true,
+                            "to": [
+                                "itemId"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "Executes an insert query to the ITEMS table. This will save the item record in the database",
+                    "name": "io.toro.mock.order.sql.item.InsertItem",
+                    "inputs": [
+                        {
+                            "from": [
+                                "item",
+                                "name"
+                            ],
+                            "to": [
+                                "insertItemInput",
+                                "itemName"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "item",
+                                "description"
+                            ],
+                            "to": [
+                                "insertItemInput",
+                                "itemDescription"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "item",
+                                "price"
+                            ],
+                            "to": [
+                                "insertItemInput",
+                                "price"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "itemId"
+                            ],
+                            "to": [
+                                "insertItemInput",
+                                "itemId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "201",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Successfully added new item with id: ${itemId}.\"",
+                            "evaluate": true,
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ],
+                            "priority": 1
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "fork",
+                    "comments": "Check if it's an SQL constraint violation",
+                    "expression": "$gloopException.message.contains( 'java.sql.SQLIntegrityConstraintViolationException' )",
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "label": "true",
+                            "comments": "If the exception caught was an SQL constraint violation, set the response code to 400",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "error",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.Throwable"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "realException"
+                                    ],
+                                    "to": [
+                                        "throwable"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "gloopStackTrace"
+                                    ],
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "400",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "$gloopException.message",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeCode",
+                            "label": "false",
+                            "comments": "else, set the response code to 500",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "error",
+                            "parameters": [
+                                "java.lang.String",
+                                "java.lang.Throwable"
+                            ],
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "realException"
+                                    ],
+                                    "to": [
+                                        "throwable"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "$gloopException",
+                                        "gloopStackTrace"
+                                    ],
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIResponse",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "500",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "$gloopException.message",
+                                    "evaluate": true,
+                                    "to": [
+                                        "APIResponse",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

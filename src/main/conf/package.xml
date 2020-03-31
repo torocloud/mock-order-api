@@ -1,0 +1,9 @@
+<package stateOnStartup="unloaded" id="mock-order-api" version="1.0.0" context-path="/mock-order-api">
+  <package-dependencies/>
+  <startup-services>
+    <startup-service>gloop:io.toro.mock.order.config.CreateDatabase/io.toro.mock.order.config.CreateDatabase</startup-service>
+  </startup-services>
+  <shutdown-services>
+    <shutdown-service>gloop:io.toro.mock.order.config.DeleteDatabase/io.toro.mock.order.config.DeleteDatabase</shutdown-service>
+  </shutdown-services>
+</package>

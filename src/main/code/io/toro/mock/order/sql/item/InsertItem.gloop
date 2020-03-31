@@ -1,0 +1,46 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertItemInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "itemId"
+                },
+                {
+                    "name": "itemName"
+                },
+                {
+                    "name": "itemDescription"
+                },
+                {
+                    "name": "price",
+                    "type": "double"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "mock_order_api",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"ITEMS\" (\n\t\"ITEM_ID\",\n\t\"ITEM_NAME\",\n\t\"ITEM_DESCRIPTION\",\n\t\"PRICE\"\n) \nVALUES (\n\t:itemId,\n\t:itemName,\n\t:itemDescription,\n\t:price\n)"
+}

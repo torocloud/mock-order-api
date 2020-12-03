@@ -2,10 +2,17 @@
     "comments": "Get all orders",
     "output": [
         {
-            "name": "orders",
+            "name": "response",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.order.model.order.Order"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "orders",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.order.model.order.Order"
+                }
+            ]
         },
         {
             "name": "responseCode",
@@ -13,9 +20,9 @@
             "defaultValue": 200
         },
         {
-            "name": "APIResponse",
+            "name": "APIException",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "paths": [
@@ -119,6 +126,22 @@
                             "to": [
                                 "responseCode"
                             ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Orders fetched successfully.",
+                            "to": [
+                                "response",
+                                "message"
+                            ]
                         }
                     ]
                 },
@@ -131,6 +154,7 @@
                     },
                     "output": {
                         "path": [
+                            "response",
                             "orders"
                         ]
                     },
@@ -140,49 +164,10 @@
                                 {
                                     "from": [
                                         "selectAllOrdersInputCursor",
-                                        "ORDER_ID"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "orderId"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersInputCursor",
-                                        "ORDER_DATE_CREATED"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "dateCreated"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersInputCursor",
-                                        "ORDER_DATE_UPDATED"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "dateUpdated"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersInputCursor",
-                                        "STATUS"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "status"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersInputCursor",
                                         "CUSTOMER_ID"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "customerId"
@@ -194,6 +179,7 @@
                                         "CUSTOMER_DATE_CREATED"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "dateCreated"
@@ -205,6 +191,7 @@
                                         "CUSTOMER_DATE_UPDATED"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "dateUpdated"
@@ -216,6 +203,7 @@
                                         "CUSTOMER_NAME"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "name"
@@ -227,6 +215,7 @@
                                         "CUSTOMER_ADDRESS"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "address"
@@ -238,6 +227,7 @@
                                         "CUSTOMER_EMAIL"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "email"
@@ -249,15 +239,61 @@
                                         "CUSTOMER_PHONE_NUMBER"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "phoneNumber"
                                     ]
                                 },
                                 {
+                                    "from": [
+                                        "selectAllOrdersInputCursor",
+                                        "ORDER_ID"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "orderId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersInputCursor",
+                                        "ORDER_DATE_CREATED"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "dateCreated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersInputCursor",
+                                        "ORDER_DATE_UPDATED"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "dateUpdated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersInputCursor",
+                                        "STATUS"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "status"
+                                    ]
+                                },
+                                {
                                     "type": "set",
                                     "expression": "0",
                                     "to": [
+                                        "response",
                                         "orders",
                                         "totalPrice"
                                     ]
@@ -288,6 +324,7 @@
                                         "output"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customFields"
                                     ]
@@ -368,6 +405,7 @@
                             },
                             "output": {
                                 "path": [
+                                    "response",
                                     "orders",
                                     "orderItems"
                                 ]
@@ -376,11 +414,23 @@
                                 {
                                     "lines": [
                                         {
+                                            "type": "set",
+                                            "expression": "response?.orders?.totalPrice += selectAllOrderItemInputCursor.PRICE",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "orders",
+                                                "totalPrice"
+                                            ],
+                                            "priority": 1
+                                        },
+                                        {
                                             "from": [
                                                 "selectAllOrderItemInputCursor",
                                                 "ID"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "id"
@@ -392,6 +442,7 @@
                                                 "NAME"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "name"
@@ -403,6 +454,7 @@
                                                 "DESCRIPTION"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "description"
@@ -414,6 +466,7 @@
                                                 "QUANTITY"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "quantity"
@@ -425,18 +478,10 @@
                                                 "PRICE"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "price"
-                                            ]
-                                        },
-                                        {
-                                            "type": "set",
-                                            "expression": "orders.totalPrice += selectAllOrderItemInputCursor.PRICE",
-                                            "evaluate": true,
-                                            "to": [
-                                                "orders",
-                                                "totalPrice"
                                             ]
                                         }
                                     ]
@@ -478,14 +523,6 @@
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
                             "expression": "500",
                             "to": [
                                 "responseCode"
@@ -493,10 +530,25 @@
                         },
                         {
                             "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
+                            "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

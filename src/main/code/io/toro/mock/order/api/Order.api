@@ -1,31 +1,46 @@
 {
+    "authTypes": [
+        "BASIC"
+    ],
+    "groups": [
+        "ESBAPIAdminGroup"
+    ],
     "info": {
         "title": "Mock Order API",
+        "description": "This is a sample product api. This can be used for mocking or testing APIs.\n\n### Sending Authenticated Requests\n\nYou can use your ECC account to send authenticated request to the API. Your ECC credentials must be sent in the `Authorization` header in the HTTP request\n\n#### To authenticate a request with basic authentication\n\n1. Combine your email and password with a colon (`:`). e.g. `jdoe@mailinator.com:pa$$w0rd`\n2. Encode the resulting string in Base64\n3. Include an Authorization header in the HTTP request containing the base64-encoded string. Example: ```\nAuthorization: Basic amRvZUBtYWlsaW5hdG9yLmNvbTpwYSQkdzByZA==```",
         "license": {
             "name": "MIT"
         },
-        "version": "1.0-SNAPSHOT"
+        "version": "1.1"
     },
     "basePath": "/mock-order-api",
     "paths": {
         "/items": {
             "get": {
                 "tags": [
-                    "Item"
+                    "Items"
                 ],
-                "summary": "Retrieves a list of all available items for order",
-                "description": "This services will list all the items availalbe for the mock order API",
+                "summary": "List all items available for order",
+                "description": "Returns a list of all the items availalbe for the mock order API",
                 "produces": [
                     "application/json"
                 ],
                 "responses": {
                     "200": {
-                        "body": "item",
-                        "description": "If the request is successful, The API will return all the list of items available"
+                        "body": "APIResponse",
+                        "description": "If the request is successful, the API returns a list of all inventory items.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully fetched items.\",\n    \"item\": [\n        {\n            \"itemId\": \"403b4d54-847d-45eb-9ead-ad9c52b23d28\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Speakers\",\n            \"description\": \"odio in\",\n            \"price\": 41.24\n        },\n        {\n            \"itemId\": \"dd846834-15bc-46ba-9440-c8b90743827f\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Monitor\",\n            \"description\": \"in quam fringilla rhoncus\",\n            \"price\": 48.82\n        },\n        {\n            \"itemId\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Mac-mini\",\n            \"description\": \"dictumst maecenas\",\n            \"price\": 47.25\n        }\n    ]\n}"
+                        }
                     },
                     "500": {
-                        "body": "APIResponse",
-                        "description": "The API response that contains the error message if the API encounters an error while processing the request"
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -34,10 +49,10 @@
             },
             "post": {
                 "tags": [
-                    "Item"
+                    "Items"
                 ],
-                "summary": "Create an item",
-                "description": "Create a new item record that will be available for order",
+                "summary": "Create a new inventory item",
+                "description": "Creates a new item record that will be available for order.",
                 "consumes": [
                     "application/json"
                 ],
@@ -49,9 +64,29 @@
                     "description": "item"
                 },
                 "responses": {
-                    "-1": {
+                    "201": {
                         "body": "APIResponse",
-                        "description": "Depending whether the mock API request was successful or not, it will return a success or error result, with a short summary of the success or error message.\n\n* 201 if the item was created.\n* 400 If there's a duplicate or existing entry for the item you are trying to create.\n* 500 if the API encountered an error while processing the request."
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully added item with id ed47523f-4b09-40e6-92e0-81e3b03df939.\",\n    \"item\": {\n        \"itemId\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n        \"dateCreated\": 1606954304000,\n        \"dateUpdated\": 1606954304000,\n        \"name\": \"Mac-mini\",\n        \"description\": \"dictumst maecenas\",\n        \"price\": 47.25\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the server failed to save the item record.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Item creation failed. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -62,7 +97,7 @@
         "/orders": {
             "get": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
                 "summary": "Get all orders.",
                 "description": "This services retrieves a list of all orders.",
@@ -71,12 +106,20 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "orders",
-                        "description": "If the request is successful, the API returns a list of all orders."
+                        "body": "response",
+                        "description": "If the request is successful, the API returns a list of all orders.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Orders fetched successfully.\",\n    \"orders\": [\n        {\n            \"orderId\": \"4de536e2-9e90-438b-9c5d-ec94fcf6a317\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 94.0,\n            \"customer\": {\n                \"customerId\": \"f370e377-a166-493c-9447-ed5ba60d63f0\",\n                \"dateCreated\": 1606874888000,\n                \"dateUpdated\": 1606874888000,\n                \"name\": \"Laurent Dysart\",\n                \"address\": \"Philippines\",\n                \"email\": \"ldysart4@free.fr\",\n                \"phoneNumber\": \"111-282-2284\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n                    \"name\": \"Mac-mini\",\n                    \"description\": \"dictumst maecenas\",\n                    \"price\": 94.0,\n                    \"quantity\": 2\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"e209db02-a07a-458a-8d10-c8240718bbfd\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 350.0,\n            \"customer\": {\n                \"customerId\": \"c5cd9579-bad8-492c-b541-0f14bda2faec\",\n                \"dateCreated\": 1606874888000,\n                \"dateUpdated\": 1606874888000,\n                \"name\": \"Marysa Lytlle\",\n                \"address\": \"Sweden\",\n                \"email\": \"mlytlle6@slideshare.net\",\n                \"phoneNumber\": \"941-581-5897\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"74d07572-7c01-4457-8e08-c91b8e14ebc6\",\n                    \"name\": \"iMac\",\n                    \"description\": \"morbi odio odio elementum eu\",\n                    \"price\": 350.0,\n                    \"quantity\": 6\n                }\n            ],\n            \"customFields\": {\n\n            }\n        }\n    ]\n}"
+                        }
                     },
                     "500": {
-                        "body": "APIResponse",
-                        "description": "Response when the API encountered an error while processing the request."
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -85,7 +128,7 @@
             },
             "post": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
                 "summary": "Create an order",
                 "description": "This services creates an order",
@@ -102,19 +145,35 @@
                 "responses": {
                     "201": {
                         "body": "APIResponse",
-                        "description": "Depending whether the mock API request was successful or not, it will return a success or error result, with a short summary of the success or error message.\n\n* 201 if the order was created.\n* 400 If there's a duplicate or existing entry for the order you are trying to create.\n* 500 if the API encountered an error while processing the request."
+                        "description": "If the order was created.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully created order with id 4de536e2-9e90-438b-9c5d-ec94fcf6a317.\",\n    \"order\": {\n        \"orderId\": \"4de536e2-9e90-438b-9c5d-ec94fcf6a317\",\n        \"dateCreated\": 1606954304000,\n        \"dateUpdated\": 1606978994000,\n        \"status\": \"NEW\",\n        \"totalPrice\": 94.0,\n        \"customer\": {\n            \"customerId\": \"f370e377-a166-493c-9447-ed5ba60d63f0\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"name\": \"Lilian Dysarts\",\n            \"address\": \"Philippines\",\n            \"email\": \"ldysart4@free.fr\",\n            \"phoneNumber\": \"111-282-2284\"\n        },\n        \"orderItems\": [\n            {\n                \"id\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n                \"name\": \"Mac-mini\",\n                \"description\": \"dictumst maecenas\",\n                \"price\": 94.0,\n                \"quantity\": 2\n            }\n        ],\n        \"customFields\": {\n\n        }\n    }\n}"
+                        }
                     },
                     "400": {
-                        "body": "APIResponse",
-                        "description": "The response when the request encountered an invalid processing"
-                    },
-                    "500": {
-                        "body": "APIResponse",
-                        "description": "The response if the request encountered an exception while processing the request"
+                        "body": "APIException",
+                        "description": "If the request encountered an invalid processing",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"A duplicate record already exists for this order.\"\n}"
+                        }
                     },
                     "404": {
-                        "body": "APIResponse",
-                        "description": "Response when the "
+                        "body": "APIException",
+                        "description": "If the record for the customer placing the record is not found.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Customer with c5cd9579-bad8-492c-b541-0f14bda2faec not found or does not exist.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -126,7 +185,7 @@
             "description": "All operations related to modfying, and retrieving a single customer record",
             "get": {
                 "tags": [
-                    "Customer"
+                    "Customers"
                 ],
                 "summary": "Get a customer by id",
                 "description": "Retrieves a single customer record by its id.",
@@ -142,12 +201,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "customer",
-                        "description": "Customer details"
+                        "body": "response",
+                        "description": "Customer details",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Customer record fetched successfully.\",\n    \"customer\": {\n        \"customerId\": \"c5cd9579-bad8-492c-b541-0f14bda2faec\",\n        \"dateCreated\": 1606874888000,\n        \"dateUpdated\": 1606874888000,\n        \"name\": \"Marysa Lytlle\",\n        \"address\": \"Sweden\",\n        \"email\": \"mlytlle6@slideshare.net\",\n        \"phoneNumber\": \"941-581-5897\"\n    }\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "The default error response. Depending on the error encountered, it will return one from the list of HTTP response codes below:\n\n* 404 if the record does not exist, or could not be found\n* 500 if the service encountered an error while processing the request"
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the customer could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Customer with id c5cd9579-bad8-492c-b541-0f14bda2faec not found or does not exist.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"apiErrorCode\": null,\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\",\n    \"payload\": null,\n    \"cause\": null,\n    \"errorMessages\": [\n\n    ],\n    \"fieldErrors\": [\n\n    ]\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -156,7 +231,7 @@
             },
             "delete": {
                 "tags": [
-                    "Customer"
+                    "Customers"
                 ],
                 "summary": "Delete a customer",
                 "description": "Removes a single customer record ",
@@ -171,9 +246,29 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "The default API response. Depending whether the delete request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 204 if the record was sucessfully deleted\n* 404 if the record you are trying to delete does not exist\n* 500 if the service encountered an error while processing the request"
+                    "200": {
+                        "body": "response",
+                        "description": "If the customer record was successfully deleted.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Customer record deleted successfully.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the customer record to be deleted could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Customer with id c5cd9579-bad8-492c-b541-0f14bda2faec not found or does not exist.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -182,7 +277,7 @@
             },
             "patch": {
                 "tags": [
-                    "Customer"
+                    "Customers"
                 ],
                 "summary": "Update a customer record",
                 "description": "Updates a single customer record",
@@ -204,9 +299,37 @@
                     "description": "customer"
                 },
                 "responses": {
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "The default API response. Depending whether the update request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 200 if the record was successfully updated.\n* 404 if the record you are trying to update does not exist or could not be found\n* 400 if there's a possible duplicate record e.g. same record name\n* 500 if the API encountered an error while processing the request."
+                    "200": {
+                        "body": "response",
+                        "description": "If the record was successfully updated.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Customer record updated successfully.\",\n    \"customer\": {\n        \"customerId\": \"f370e377-a166-493c-9447-ed5ba60d63f0\",\n        \"dateCreated\": 1606954304000,\n        \"dateUpdated\": 1606978051000,\n        \"name\": \"Lilian Dysarts\",\n        \"address\": \"Philippines\",\n        \"email\": \"ldysart4@free.fr\",\n        \"phoneNumber\": \"111-282-2284\"\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the record failed to update due to an error.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Customer record failed to update. Check Martini Logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the record to be updated could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Customer with id f370e377-a166-493c-9447-ed5ba60d63f0 not found or does not exist.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -217,7 +340,7 @@
         "/customers": {
             "get": {
                 "tags": [
-                    "Customer"
+                    "Customers"
                 ],
                 "summary": "Get all customer record.",
                 "description": "Retrieves all the customer record",
@@ -226,24 +349,29 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "customer",
-                        "description": "List of customer"
+                        "body": "response",
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully fetched customer list.\",\n    \"customer\": [\n        {\n            \"customerId\": \"2a029a12-f010-416f-ada2-f033a49a81c5\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Hiram Luck\",\n            \"address\": \"Egypt\",\n            \"email\": \"hluck2@microsoft.com\",\n            \"phoneNumber\": \"118-412-0977\"\n        },\n        {\n            \"customerId\": \"d64002e9-2039-4cd3-b94f-d4ef1c735cd4\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Mack Simoncelli\",\n            \"address\": \"Thailand\",\n            \"email\": \"msimoncelli3@scribd.com\",\n            \"phoneNumber\": \"206-680-4479\"\n        },\n        {\n            \"customerId\": \"f370e377-a166-493c-9447-ed5ba60d63f0\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Laurent Dysart\",\n            \"address\": \"Philippines\",\n            \"email\": \"ldysart4@free.fr\",\n            \"phoneNumber\": \"111-282-2284\"\n        },\n        {\n            \"customerId\": \"f7657cde-b782-4af6-ab21-b4002b063049\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Ora Libbey\",\n            \"address\": \"Philippines\",\n            \"email\": \"olibbey1@jigsy.com\",\n            \"phoneNumber\": \"756-706-4710\"\n        }\n    ]\n}"
+                        }
                     },
                     "500": {
-                        "body": "APIResponse",
-                        "description": "The response when the service encountered an error while processing the request"
-                    },
-                    "404": {
-                        "body": "APIResponse",
-                        "description": "Response if the customer is not found"
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
-                "operationLocation": "io.toro.mock.order.api.controller.customer.ListCustomers"
+                "operationLocation": "io.toro.mock.order.api.controller.customer.ListCustomers",
+                "responseCodeField": "responseCode"
             },
             "post": {
                 "tags": [
-                    "Customer"
+                    "Customers"
                 ],
                 "summary": "Create a new customer",
                 "description": "Adds a new customer record",
@@ -258,9 +386,29 @@
                     "description": "customer"
                 },
                 "responses": {
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "The default API response. Depending whether the request succeeded or failed. It will return one of the following HTTP response codes\n\n* 201 if the customer record was created successfully\n* 400 if there was an SQL constraint violation\n* 500 if the service encountered an error while processing the request"
+                    "201": {
+                        "body": "response",
+                        "description": "If the customer record was created successfully.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully added customer with id c5cd9579-bad8-492c-b541-0f14bda2faec\",\n    \"customer\": {\n        \"customerId\": \"c5cd9579-bad8-492c-b541-0f14bda2faec\",\n        \"dateCreated\": 1606874888000,\n        \"dateUpdated\": 1606874888000,\n        \"name\": \"Marysa Lytlle\",\n        \"address\": \"Sweden\",\n        \"email\": \"mlytlle6@slideshare.net\",\n        \"phoneNumber\": \"941-581-5897\"\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the customer record failed to be created.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Failed to create customer. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -271,7 +419,7 @@
         "/items/{itemId}": {
             "get": {
                 "tags": [
-                    "Item"
+                    "Items"
                 ],
                 "summary": "Retrieves a single item",
                 "description": "This service will retrieve an item that matches the id provided in the request",
@@ -287,12 +435,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "item",
-                        "description": "If the request is successful, it will return the details of an item in the response."
+                        "body": "APIResponse",
+                        "description": "If the request is successful, returns the inventory item record that matches the given `itemId`",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Item fetched successfully.\",\n    \"item\": {\n        \"itemId\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n        \"dateCreated\": 1606954304000,\n        \"dateUpdated\": 1606954304000,\n        \"name\": \"Mac-mini\",\n        \"description\": \"dictumst maecenas\",\n        \"price\": 47.25\n    }\n}"
+                        }
                     },
                     "404": {
-                        "body": "APIResponse",
-                        "description": "If there's no record that matches the id provided, it will return an `APIResponse` that has a message that the item could not be found"
+                        "body": "APIException",
+                        "description": "If the inventory item is not found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Item with id ed47523f-4b09-40e6-92e0-81e3b03df939 not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -301,9 +465,9 @@
             },
             "delete": {
                 "tags": [
-                    "Item"
+                    "Items"
                 ],
-                "summary": "Deletes an item.",
+                "summary": "Delete an item.",
                 "description": "Removes an item from the available items you can order in the mock order API.",
                 "produces": [
                     "application/json"
@@ -316,9 +480,29 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "APIResponse",
-                        "description": "Depending whether the mock API request was successful or not, it will return a success or error result, with a short summary of the success or error message.\n\n* 204 if the item was successful.\n* 404 If the item requested to be deleted could not be found.\n* 500 if the API encountered an error while processing the request."
+                        "description": "If the request is successful, removes an inventory item record in the API.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully deleted item with id ed47523f-4b09-40e6-92e0-81e3b03df939.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the record to be deleted could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Item with id ed47523f-4b09-40e6-92e0-81e3b03df939 not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -327,7 +511,7 @@
             },
             "patch": {
                 "tags": [
-                    "Item"
+                    "Items"
                 ],
                 "summary": "Update an item",
                 "description": "Updates an item in the mock order API",
@@ -349,9 +533,37 @@
                     "description": "item"
                 },
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "APIResponse",
-                        "description": "The default API response. Depending whether the update request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 200 if the record was successfully updated.\n* 404 if the record you are trying to update does not exist or could not be found\n* 400 if there's a possible duplicate record e.g. same record name\n* 500 if the API encountered an error while processing the request."
+                        "description": "If the inventory item was updated successfully.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Item updated successfully.\",\n    \"item\": {\n        \"itemId\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n        \"dateCreated\": 1606954304000,\n        \"dateUpdated\": 1606954304000,\n        \"name\": \"Mac-mini\",\n        \"description\": \"dictumst maecenas\",\n        \"price\": 47.25\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the update failed due to an error or invalid processing.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Update failed. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the inventory item to be updated could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Item with id ed47523f-4b09-40e6-92e0-81e3b03df939 not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -363,7 +575,7 @@
             "summary": "All operations related to modifying or retrieving a single order record",
             "get": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
                 "summary": "Get a single order record",
                 "description": "Retrieves an order record using the order id provided in the request",
@@ -379,16 +591,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "order",
-                        "description": "If the request is successful, it will return the details about a single order"
-                    },
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "The default error response. Depending on the error encountered, it will return one of the HTTP response codes below:\n\n* 404 if the order was not found, or if there is no existing orders\n* 500 if an errror was encountered while processing the request"
+                        "body": "response",
+                        "description": "If the request is successful, it will return the details about a single order.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Order details fetched sucessfully.\",\n    \"order\": {\n        \"orderId\": \"4de536e2-9e90-438b-9c5d-ec94fcf6a317\",\n        \"dateCreated\": 1606874888000,\n        \"dateUpdated\": 1606874888000,\n        \"status\": \"NEW\",\n        \"totalPrice\": 94.0,\n        \"customer\": {\n            \"customerId\": \"f370e377-a166-493c-9447-ed5ba60d63f0\",\n            \"dateCreated\": 1606874888000,\n            \"dateUpdated\": 1606874888000,\n            \"name\": \"Laurent Dysart\",\n            \"address\": \"Philippines\",\n            \"email\": \"ldysart4@free.fr\",\n            \"phoneNumber\": \"111-282-2284\"\n        },\n        \"orderItems\": [\n            {\n                \"id\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n                \"name\": \"Mac-mini\",\n                \"description\": \"dictumst maecenas\",\n                \"price\": 94.0,\n                \"quantity\": 2\n            }\n        ],\n        \"customFields\": {\n\n        }\n    }\n}"
+                        }
                     },
                     "404": {
-                        "body": "APIResponse",
-                        "description": "Response if the order is not found"
+                        "body": "APIException",
+                        "description": "If the order to be fetched could not be found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Order with id e209db02-a07a-458a-8d10-c8240718bbfd not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -397,10 +621,10 @@
             },
             "delete": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
                 "summary": "Delete an order",
-                "description": "Removes an order record, and also delets the order items associated to the order",
+                "description": "Removes an order record, and also deletes the order items associated to the order",
                 "produces": [
                     "application/json"
                 ],
@@ -412,9 +636,29 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "APIResponse",
-                        "description": "The default API response. Depending whether the delete request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 204 if the record was sucessfully deleted\n* 404 if the record you are trying to delete does not exist\n* 500 if the service encountered an error while processing the request"
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully deleted order with id 4de536e2-9e90-438b-9c5d-ec94fcf6a317.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the order record to be deleted could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Order with id 4de536e2-9e90-438b-9c5d-ec94fcf6a317 not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -423,7 +667,7 @@
             },
             "patch": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
                 "summary": "Update order details",
                 "description": "Updates details about an order. Currently it only supports changing the customer record associated to the order, adding custom fields, and updating the order status",
@@ -445,9 +689,37 @@
                     "description": "order"
                 },
                 "responses": {
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "The default API response. Depending whether the update request succeed or failed, it will return an appropriate success or error message with a correspoding HTTP response codes as well.\n\n* 200 if the record was successfully updated.\n* 404 if the record you are trying to update does not exist or could not be found\n* 400 if there's a possible duplicate record e.g. same record name\n* 500 if the API encountered an error while processing the request."
+                    "200": {
+                        "body": "response",
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Order successfully updated.\",\n    \"order\": {\n        \"orderId\": \"5bc6f6e6-56f1-41fb-b27e-073a571d5794\",\n        \"dateCreated\": 1606954304000,\n        \"dateUpdated\": 1606979594000,\n        \"status\": \"NEW\",\n        \"totalPrice\": 146.0,\n        \"customer\": {\n            \"customerId\": \"ad37cd61-e030-4315-9301-0f6748f1aeaa\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"name\": \"Johann Gilstin\",\n            \"address\": \"Philippines\",\n            \"email\": \"jgilstin0@ox.ac.uk\",\n            \"phoneNumber\": \"181-472-8432\"\n        },\n        \"orderItems\": [\n            {\n                \"id\": \"dd846834-15bc-46ba-9440-c8b90743827f\",\n                \"name\": \"Monitor\",\n                \"description\": \"in quam fringilla rhoncus\",\n                \"price\": 146.0,\n                \"quantity\": 3\n            }\n        ],\n        \"customFields\": {\n\n        }\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the update failed due to an error or invalid processing.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Update failed. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the order record to be updated could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Order with id 4de536e2-9e90-438b-9c5d-ec94fcf6a317 not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -460,9 +732,10 @@
             "description": "Retrieves all the order records that matches the query filter in the request url. Currently, it only supports date range",
             "get": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
-                "description": "Get orders by date",
+                "summary": "List all orders by date",
+                "description": "Lists all orders that matches the given date filter.",
                 "produces": [
                     "application/json"
                 ],
@@ -470,22 +743,30 @@
                     {
                         "name": "dateFrom",
                         "type": "QUERY",
-                        "description": "from start date"
+                        "description": "From start date in yyyy-MM-dd HH:mm:ss format. Setting the value of this parameter to `now` automatically defaults to current date and time"
                     },
                     {
                         "name": "dateTo",
                         "type": "QUERY",
-                        "description": "to end date"
+                        "description": "To end date in yyyy-MM-dd HH:mm:ss format. Setting the value of this parameter to `now` automatically defaults to current date and time"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "body": "orders",
-                        "description": "List of order"
+                        "body": "response",
+                        "description": "If the request is sucessful, returns a list of orders that matches the given date filter.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Listing orders for Fri Jan 03 13:44:16 PST 2020 - Thu Dec 03 14:04:02 PST 2020\",\n    \"orders\": [\n        {\n            \"orderId\": \"4de536e2-9e90-438b-9c5d-ec94fcf6a317\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 94.0,\n            \"customer\": {\n                \"customerId\": \"f370e377-a166-493c-9447-ed5ba60d63f0\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Laurent Dysart\",\n                \"address\": \"Philippines\",\n                \"email\": \"ldysart4@free.fr\",\n                \"phoneNumber\": \"111-282-2284\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"ed47523f-4b09-40e6-92e0-81e3b03df939\",\n                    \"name\": \"Mac-mini\",\n                    \"description\": \"dictumst maecenas\",\n                    \"price\": 94.0,\n                    \"quantity\": 2\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"5bc6f6e6-56f1-41fb-b27e-073a571d5794\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 146.0,\n            \"customer\": {\n                \"customerId\": \"ad37cd61-e030-4315-9301-0f6748f1aeaa\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Johann Gilstin\",\n                \"address\": \"Philippines\",\n                \"email\": \"jgilstin0@ox.ac.uk\",\n                \"phoneNumber\": \"181-472-8432\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"dd846834-15bc-46ba-9440-c8b90743827f\",\n                    \"name\": \"Monitor\",\n                    \"description\": \"in quam fringilla rhoncus\",\n                    \"price\": 146.0,\n                    \"quantity\": 3\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"66314a80-5dd4-4da2-bbd1-572e0723a293\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 69.0,\n            \"customer\": {\n                \"customerId\": \"3857a037-d4d7-415a-a16f-7081a916e738\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Nat Jerram\",\n                \"address\": \"China\",\n                \"email\": \"njerram5@naver.com\",\n                \"phoneNumber\": \"223-887-5656\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"99f142c9-c21d-4f0f-91d3-eef1f87aeb01\",\n                    \"name\": \"HDMI-cable\",\n                    \"description\": \"risus semper porta volutpat\",\n                    \"price\": 69.0,\n                    \"quantity\": 4\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"90364318-b609-47c2-91e0-6998d024d3ff\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 31.0,\n            \"customer\": {\n                \"customerId\": \"d64002e9-2039-4cd3-b94f-d4ef1c735cd4\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Mack Simoncelli\",\n                \"address\": \"Thailand\",\n                \"email\": \"msimoncelli3@scribd.com\",\n                \"phoneNumber\": \"206-680-4479\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"5372c794-9435-4f6f-95ed-8c468e1d8b1a\",\n                    \"name\": \"Mousepad\",\n                    \"description\": \"tristique est et tempus semper\",\n                    \"price\": 31.0,\n                    \"quantity\": 2\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"95994cb2-86c3-4767-a9cc-55336f66b79b\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 36.0,\n            \"customer\": {\n                \"customerId\": \"f7657cde-b782-4af6-ab21-b4002b063049\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Ora Libbey\",\n                \"address\": \"Philippines\",\n                \"email\": \"olibbey1@jigsy.com\",\n                \"phoneNumber\": \"756-706-4710\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"957514a2-5b9d-4b21-996b-e8095a61aabc\",\n                    \"name\": \"Mouse\",\n                    \"description\": \"eget semper rutrum\",\n                    \"price\": 36.0,\n                    \"quantity\": 1\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"c4b55b34-7d5c-4c25-a0ee-25eb2dcd3f6f\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 41.0,\n            \"customer\": {\n                \"customerId\": \"6d1b7cbc-42ed-49d7-8015-d8a7e23afc24\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Jerrie Vant\",\n                \"address\": \"France\",\n                \"email\": \"jvant8@slate.com\",\n                \"phoneNumber\": \"545-141-4136\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"403b4d54-847d-45eb-9ead-ad9c52b23d28\",\n                    \"name\": \"Speakers\",\n                    \"description\": \"odio in\",\n                    \"price\": 41.0,\n                    \"quantity\": 1\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"d851af60-fff0-4043-97b6-992581943101\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 148.0,\n            \"customer\": {\n                \"customerId\": \"2a029a12-f010-416f-ada2-f033a49a81c5\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Hiram Luck\",\n                \"address\": \"Egypt\",\n                \"email\": \"hluck2@microsoft.com\",\n                \"phoneNumber\": \"118-412-0977\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"6c6443bc-01cd-4d7e-a7ca-c62f9e0c2f28\",\n                    \"name\": \"Keyboard\",\n                    \"description\": \"id mauris vulputate\",\n                    \"price\": 148.0,\n                    \"quantity\": 4\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"dd846834-15bc-46ba-9440-c8b90743827f\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 58.0,\n            \"customer\": {\n                \"customerId\": \"4a35f93d-04cc-4d02-aff0-8896b25a53d2\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Emmaline Rodmell\",\n                \"address\": \"Philippines\",\n                \"email\": \"erodmell9@unicef.org\",\n                \"phoneNumber\": \"601-614-0056\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"9c49e71c-ff30-487b-bb12-b35885548dd9\",\n                    \"name\": \"Extension-cord\",\n                    \"description\": \"felis fusce posuere felis sed\",\n                    \"price\": 58.0,\n                    \"quantity\": 3\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"df59e8e7-1ccb-4e56-82e0-3f89930c9dc6\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 81.0,\n            \"customer\": {\n                \"customerId\": \"53c4ca0f-f9d8-4560-919f-62dbb493b2cc\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Fin Ludovici\",\n                \"address\": \"Philippines\",\n                \"email\": \"fludovici7@zimbio.com\",\n                \"phoneNumber\": \"304-760-6275\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"695924d8-36ea-498b-aae5-22dd6ad8afd5\",\n                    \"name\": \"UPS\",\n                    \"description\": \"consectetuer eget\",\n                    \"price\": 81.0,\n                    \"quantity\": 2\n                }\n            ],\n            \"customFields\": {\n\n            }\n        },\n        {\n            \"orderId\": \"e209db02-a07a-458a-8d10-c8240718bbfd\",\n            \"dateCreated\": 1606954304000,\n            \"dateUpdated\": 1606954304000,\n            \"status\": \"NEW\",\n            \"totalPrice\": 350.0,\n            \"customer\": {\n                \"customerId\": \"c5cd9579-bad8-492c-b541-0f14bda2faec\",\n                \"dateCreated\": 1606954304000,\n                \"dateUpdated\": 1606954304000,\n                \"name\": \"Marysa Lytlle\",\n                \"address\": \"Sweden\",\n                \"email\": \"mlytlle6@slideshare.net\",\n                \"phoneNumber\": \"941-581-5897\"\n            },\n            \"orderItems\": [\n                {\n                    \"id\": \"74d07572-7c01-4457-8e08-c91b8e14ebc6\",\n                    \"name\": \"iMac\",\n                    \"description\": \"morbi odio odio elementum eu\",\n                    \"price\": 350.0,\n                    \"quantity\": 6\n                }\n            ],\n            \"customFields\": {\n\n            }\n        }\n    ]\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "APIResponse",
-                        "description": "API response"
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -496,7 +777,7 @@
         "/orders/{orderId}/status/{status}": {
             "patch": {
                 "tags": [
-                    "Order"
+                    "Orders"
                 ],
                 "summary": "Set an order's status",
                 "description": "Updates the status of an order using . Allowed values are:\n\n* NEW\n* PROCESSING\n* PENDING\n* BACK_ORDER\n* COMPLETED\n* SHIPPED",
@@ -516,9 +797,29 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "APIResponse",
-                        "description": "Depending whether the request succeeded or failed, it will return an appropriate error message with the appropriate response codes:\n\n* 404 if the order could not be found, or does not exists\n* 500 if an error was encountered while processing the request"
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully changed status of order with id 4de536e2-9e90-438b-9c5d-ec94fcf6a317 to PROCESSING.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the order record to be updated could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Order with id 4de536e2-9e90-438b-9c5d-ec94fcf6a317 not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -527,6 +828,26 @@
             }
         }
     },
+    "tags": [
+        {
+            "name": "Items",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        },
+        {
+            "name": "Customers",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        },
+        {
+            "name": "Orders",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        }
+    ],
     "externalDocumentation": {
         "url": "https://docs.torocloud.com/integrate/tutorials/tutorials-case-studies/mock-order-api/"
     }

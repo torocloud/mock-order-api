@@ -3,7 +3,15 @@
         {
             "name": "APIResponse",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "item",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.order.model.item.Item"
+                }
+            ]
         },
         {
             "name": "responseCode",
@@ -11,10 +19,9 @@
             "defaultValue": 200
         },
         {
-            "name": "item",
+            "name": "APIException",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.order.model.item.Item"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -72,18 +79,18 @@
                     ],
                     "outputs": [
                         {
-                            "type": "set",
-                            "expression": "200",
-                            "to": [
-                                "responseCode"
-                            ]
-                        },
-                        {
                             "from": [
                                 "selectAllItemInputCursor"
                             ],
                             "to": [
                                 "selectAllItemOutputCursor"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
                             ]
                         }
                     ]
@@ -98,6 +105,7 @@
                     },
                     "output": {
                         "path": [
+                            "APIResponse",
                             "item"
                         ]
                     },
@@ -111,28 +119,9 @@
                                         "ITEM_ID"
                                     ],
                                     "to": [
+                                        "APIResponse",
                                         "item",
                                         "itemId"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllItemOutputCursor",
-                                        "DATE_CREATED"
-                                    ],
-                                    "to": [
-                                        "item",
-                                        "dateCreated"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllItemOutputCursor",
-                                        "DATE_UPDATED"
-                                    ],
-                                    "to": [
-                                        "item",
-                                        "dateUpdated"
                                     ]
                                 },
                                 {
@@ -141,6 +130,7 @@
                                         "ITEM_NAME"
                                     ],
                                     "to": [
+                                        "APIResponse",
                                         "item",
                                         "name"
                                     ]
@@ -151,6 +141,7 @@
                                         "ITEM_DESCRIPTION"
                                     ],
                                     "to": [
+                                        "APIResponse",
                                         "item",
                                         "description"
                                     ]
@@ -161,10 +152,53 @@
                                         "PRICE"
                                     ],
                                     "to": [
+                                        "APIResponse",
                                         "item",
                                         "price"
                                     ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "DATE_CREATED"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "item",
+                                        "dateCreated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllItemOutputCursor",
+                                        "DATE_UPDATED"
+                                    ],
+                                    "to": [
+                                        "APIResponse",
+                                        "item",
+                                        "dateUpdated"
+                                    ]
                                 }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Successfully fetched items.",
+                            "to": [
+                                "APIResponse",
+                                "message"
                             ]
                         }
                     ]
@@ -222,6 +256,30 @@
                             "evaluate": true,
                             "to": [
                                 "APIResponse",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

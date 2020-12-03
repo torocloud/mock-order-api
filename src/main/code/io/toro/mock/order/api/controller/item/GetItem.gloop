@@ -8,7 +8,14 @@
         {
             "name": "APIResponse",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "item",
+                    "type": "model",
+                    "reference": "io.toro.mock.order.model.item.Item"
+                }
+            ]
         },
         {
             "name": "responseCode",
@@ -16,9 +23,9 @@
             "defaultValue": 200
         },
         {
-            "name": "item",
+            "name": "APIException",
             "type": "model",
-            "reference": "io.toro.mock.order.model.item.Item"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -48,28 +55,9 @@
                                 "ITEM_ID"
                             ],
                             "to": [
+                                "APIResponse",
                                 "item",
                                 "itemId"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectItemOutput",
-                                "DATE_CREATED"
-                            ],
-                            "to": [
-                                "item",
-                                "dateCreated"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectItemOutput",
-                                "DATE_UPDATED"
-                            ],
-                            "to": [
-                                "item",
-                                "dateUpdated"
                             ]
                         },
                         {
@@ -78,6 +66,7 @@
                                 "ITEM_NAME"
                             ],
                             "to": [
+                                "APIResponse",
                                 "item",
                                 "name"
                             ]
@@ -88,6 +77,7 @@
                                 "ITEM_DESCRIPTION"
                             ],
                             "to": [
+                                "APIResponse",
                                 "item",
                                 "description"
                             ]
@@ -98,8 +88,31 @@
                                 "PRICE"
                             ],
                             "to": [
+                                "APIResponse",
                                 "item",
                                 "price"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemOutput",
+                                "DATE_CREATED"
+                            ],
+                            "to": [
+                                "APIResponse",
+                                "item",
+                                "dateCreated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemOutput",
+                                "DATE_UPDATED"
+                            ],
+                            "to": [
+                                "APIResponse",
+                                "item",
+                                "dateUpdated"
                             ]
                         },
                         {
@@ -108,13 +121,29 @@
                             "to": [
                                 "responseCode"
                             ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "APIResponse",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Item fetched successfully.",
+                            "to": [
+                                "APIResponse",
+                                "message"
+                            ]
                         }
                     ]
                 },
                 {
                     "type": "fork",
                     "comments": "Item found?",
-                    "expression": "item?.itemId",
+                    "expression": "APIResponse?.item?.itemId",
                     "children": [
                         {
                             "type": "invokeCode",
@@ -128,7 +157,7 @@
                             "inputs": [
                                 {
                                     "type": "set",
-                                    "expression": "\"Item with id \\\"${itemId}\\\" not found.\"",
+                                    "expression": "\"Item with id ${itemId} not found.\"",
                                     "evaluate": true,
                                     "to": [
                                         "message"
@@ -141,7 +170,7 @@
                                         "output"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "APIException",
                                         "message"
                                     ]
                                 },
@@ -156,8 +185,16 @@
                                     "type": "set",
                                     "expression": "ERROR",
                                     "to": [
-                                        "APIResponse",
+                                        "APIException",
                                         "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
                                     ]
                                 }
                             ]
@@ -207,16 +244,23 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
                                 "result"
                             ]
                         },
                         {
                             "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
+                            "expression": "500",
                             "to": [
-                                "APIResponse",
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

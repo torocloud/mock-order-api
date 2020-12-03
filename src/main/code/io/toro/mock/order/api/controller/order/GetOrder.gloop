@@ -7,9 +7,16 @@
     ],
     "output": [
         {
-            "name": "order",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.order.model.order.Order"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "order",
+                    "type": "model",
+                    "reference": "io.toro.mock.order.model.order.Order"
+                }
+            ]
         },
         {
             "name": "responseCode",
@@ -17,9 +24,9 @@
             "defaultValue": 200
         },
         {
-            "name": "APIResponse",
+            "name": "APIException",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "paths": [
@@ -60,19 +67,12 @@
                     ],
                     "outputs": [
                         {
-                            "type": "set",
-                            "expression": "0",
-                            "to": [
-                                "order",
-                                "totalPrice"
-                            ]
-                        },
-                        {
                             "from": [
                                 "selectOrderOutput",
                                 "CUSTOMER_ID"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "customer",
                                 "customerId"
@@ -84,6 +84,7 @@
                                 "CUSTOMER_DATE_CREATED"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "customer",
                                 "dateCreated"
@@ -92,20 +93,10 @@
                         {
                             "from": [
                                 "selectOrderOutput",
-                                "CUSTOMER_DATE_UPDATED"
-                            ],
-                            "to": [
-                                "order",
-                                "customer",
-                                "dateUpdated"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectOrderOutput",
                                 "CUSTOMER_NAME"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "customer",
                                 "name"
@@ -114,9 +105,22 @@
                         {
                             "from": [
                                 "selectOrderOutput",
+                                "CUSTOMER_DATE_UPDATED"
+                            ],
+                            "to": [
+                                "response",
+                                "order",
+                                "customer",
+                                "dateUpdated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectOrderOutput",
                                 "CUSTOMER_ADDRESS"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "customer",
                                 "address"
@@ -128,6 +132,7 @@
                                 "CUSTOMER_EMAIL"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "customer",
                                 "email"
@@ -139,6 +144,7 @@
                                 "CUSTOMER_PHONE_NUMBER"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "customer",
                                 "phoneNumber"
@@ -150,38 +156,9 @@
                                 "ORDER_ID"
                             ],
                             "to": [
+                                "response",
                                 "order",
                                 "orderId"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectOrderOutput",
-                                "ORDER_DATE_CREATED"
-                            ],
-                            "to": [
-                                "order",
-                                "dateCreated"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectOrderOutput",
-                                "ORDER_DATE_UPDATED"
-                            ],
-                            "to": [
-                                "order",
-                                "dateUpdated"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectOrderOutput",
-                                "STATUS"
-                            ],
-                            "to": [
-                                "order",
-                                "status"
                             ]
                         },
                         {
@@ -192,13 +169,55 @@
                             "to": [
                                 "CUSTOM_FIELD"
                             ]
+                        },
+                        {
+                            "from": [
+                                "selectOrderOutput",
+                                "ORDER_DATE_CREATED"
+                            ],
+                            "to": [
+                                "response",
+                                "order",
+                                "dateCreated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectOrderOutput",
+                                "ORDER_DATE_UPDATED"
+                            ],
+                            "to": [
+                                "response",
+                                "order",
+                                "dateUpdated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectOrderOutput",
+                                "STATUS"
+                            ],
+                            "to": [
+                                "response",
+                                "order",
+                                "status"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "0",
+                            "to": [
+                                "response",
+                                "order",
+                                "totalPrice"
+                            ]
                         }
                     ]
                 },
                 {
                     "type": "fork",
                     "comments": "If there's an orderId return from the request",
-                    "expression": "order?.orderId",
+                    "expression": "response?.order?.orderId",
                     "children": [
                         {
                             "type": "invokeCode",
@@ -225,16 +244,8 @@
                                         "output"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "APIException",
                                         "message"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
                                     ]
                                 },
                                 {
@@ -242,6 +253,22 @@
                                     "expression": "404",
                                     "to": [
                                         "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIException",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
                                     ]
                                 }
                             ]
@@ -253,7 +280,7 @@
                                 {
                                     "type": "fork",
                                     "comments": "Check if the order id found matches the one sent in the request",
-                                    "expression": "orderId.equals( order.orderId )",
+                                    "expression": "orderId.equals( response.order.orderId )",
                                     "children": [
                                         {
                                             "type": "block",
@@ -289,6 +316,7 @@
                                                                 "output"
                                                             ],
                                                             "to": [
+                                                                "response",
                                                                 "order",
                                                                 "customFields"
                                                             ]
@@ -304,8 +332,16 @@
                                                             "type": "set",
                                                             "expression": "SUCCESS",
                                                             "to": [
-                                                                "APIResponse",
+                                                                "response",
                                                                 "result"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "set",
+                                                            "expression": "Order details fetched sucessfully.",
+                                                            "to": [
+                                                                "response",
+                                                                "message"
                                                             ]
                                                         }
                                                     ]
@@ -390,6 +426,7 @@
                                                     },
                                                     "output": {
                                                         "path": [
+                                                            "response",
                                                             "order",
                                                             "orderItems"
                                                         ]
@@ -399,20 +436,12 @@
                                                             "comments": "Map a cursor record to the order items property",
                                                             "lines": [
                                                                 {
-                                                                    "type": "set",
-                                                                    "expression": "order.totalPrice += selectAllOrderItemInputCursor.PRICE",
-                                                                    "evaluate": true,
-                                                                    "to": [
-                                                                        "order",
-                                                                        "totalPrice"
-                                                                    ]
-                                                                },
-                                                                {
                                                                     "from": [
                                                                         "selectAllOrderItemInputCursor",
                                                                         "ID"
                                                                     ],
                                                                     "to": [
+                                                                        "response",
                                                                         "order",
                                                                         "orderItems",
                                                                         "id"
@@ -424,6 +453,7 @@
                                                                         "NAME"
                                                                     ],
                                                                     "to": [
+                                                                        "response",
                                                                         "order",
                                                                         "orderItems",
                                                                         "name"
@@ -435,6 +465,7 @@
                                                                         "DESCRIPTION"
                                                                     ],
                                                                     "to": [
+                                                                        "response",
                                                                         "order",
                                                                         "orderItems",
                                                                         "description"
@@ -446,6 +477,7 @@
                                                                         "QUANTITY"
                                                                     ],
                                                                     "to": [
+                                                                        "response",
                                                                         "order",
                                                                         "orderItems",
                                                                         "quantity"
@@ -457,10 +489,22 @@
                                                                         "PRICE"
                                                                     ],
                                                                     "to": [
+                                                                        "response",
                                                                         "order",
                                                                         "orderItems",
                                                                         "price"
                                                                     ]
+                                                                },
+                                                                {
+                                                                    "type": "set",
+                                                                    "expression": "response.order.totalPrice += selectAllOrderItemInputCursor.PRICE",
+                                                                    "evaluate": true,
+                                                                    "to": [
+                                                                        "response",
+                                                                        "order",
+                                                                        "totalPrice"
+                                                                    ],
+                                                                    "priority": 1
                                                                 }
                                                             ]
                                                         }
@@ -493,16 +537,8 @@
                                                         "output"
                                                     ],
                                                     "to": [
-                                                        "APIResponse",
+                                                        "APIException",
                                                         "message"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "set",
-                                                    "expression": "ERROR",
-                                                    "to": [
-                                                        "APIResponse",
-                                                        "result"
                                                     ]
                                                 },
                                                 {
@@ -510,6 +546,22 @@
                                                     "expression": "404",
                                                     "to": [
                                                         "responseCode"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "ERROR",
+                                                    "to": [
+                                                        "APIException",
+                                                        "result"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "404",
+                                                    "to": [
+                                                        "APIException",
+                                                        "httpErrorCode"
                                                     ]
                                                 }
                                             ]
@@ -553,14 +605,6 @@
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
                             "expression": "500",
                             "to": [
                                 "responseCode"
@@ -568,10 +612,25 @@
                         },
                         {
                             "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
+                            "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

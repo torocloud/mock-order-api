@@ -6,7 +6,6 @@
             "type": "date",
             "outputExpression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( val )",
             "defaultValue": "now",
-            "comments": "from start date",
             "dateFormats": [
                 "yyyy-MM-dd HH:mm:ss"
             ]
@@ -16,7 +15,6 @@
             "type": "date",
             "outputExpression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( val )",
             "defaultValue": "now",
-            "comments": "to end date",
             "dateFormats": [
                 "yyyy-MM-dd HH:mm:ss"
             ]
@@ -24,10 +22,17 @@
     ],
     "output": [
         {
-            "name": "orders",
+            "name": "response",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.order.model.order.Order"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "orders",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.order.model.order.Order"
+                }
+            ]
         },
         {
             "name": "responseCode",
@@ -35,9 +40,9 @@
             "defaultValue": 200
         },
         {
-            "name": "APIResponse",
+            "name": "APIException",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -53,67 +58,67 @@
                         {
                             "variables": [
                                 {
-                                    "name": "selectAllOrdersOutputCursor",
+                                    "name": "selectAllOrdersByDateInputCursor",
                                     "type": "model",
                                     "array": true,
                                     "gloopProperties": [
                                         {
-                                            "name": "customer_id",
+                                            "name": "CUSTOMER_ID",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "customer_date_created",
+                                            "name": "CUSTOMER_DATE_CREATED",
                                             "type": "date",
                                             "required": true
                                         },
                                         {
-                                            "name": "customer_date_updated",
+                                            "name": "CUSTOMER_DATE_UPDATED",
                                             "type": "date",
                                             "required": true
                                         },
                                         {
-                                            "name": "customer_name",
+                                            "name": "CUSTOMER_NAME",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "customer_address",
+                                            "name": "CUSTOMER_ADDRESS",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "customer_email",
+                                            "name": "CUSTOMER_EMAIL",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "customer_phone_number",
+                                            "name": "CUSTOMER_PHONE_NUMBER",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "order_id",
+                                            "name": "ORDER_ID",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "order_date_created",
+                                            "name": "ORDER_DATE_CREATED",
                                             "type": "date",
                                             "required": true
                                         },
                                         {
-                                            "name": "order_date_updated",
+                                            "name": "ORDER_DATE_UPDATED",
                                             "type": "date",
                                             "required": true
                                         },
                                         {
-                                            "name": "status",
+                                            "name": "STATUS",
                                             "required": true,
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "custom_fields",
+                                            "name": "CUSTOM_FIELDS",
                                             "required": true
                                         }
                                     ]
@@ -123,18 +128,18 @@
                     ],
                     "inputs": [
                         {
-                            "type": "set",
-                            "expression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( dateFrom )",
-                            "evaluate": true,
+                            "from": [
+                                "dateFrom"
+                            ],
                             "to": [
                                 "selectAllOrdersByDateInput",
                                 "dateFrom"
                             ]
                         },
                         {
-                            "type": "set",
-                            "expression": "new java.text.SimpleDateFormat( 'yyyy-MM-dd HH:mm:ss' ).format( dateTo )",
-                            "evaluate": true,
+                            "from": [
+                                "dateTo"
+                            ],
                             "to": [
                                 "selectAllOrdersByDateInput",
                                 "dateTo"
@@ -144,10 +149,27 @@
                     "outputs": [
                         {
                             "from": [
-                                "SelectAllOrdersByDateOutputCursor"
+                                "selectAllOrdersByDateInputCursor"
                             ],
                             "to": [
-                                "selectAllOrdersOutputCursor"
+                                "selectAllOrdersByDateInputCursor"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Listing orders for ${dateFrom} - ${dateTo}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "message"
                             ]
                         }
                     ]
@@ -157,97 +179,72 @@
                     "comments": "iterates over the output cursor returned by querying all the orders that is returned by the previous step, then maps it to the orders Gloop model",
                     "input": {
                         "path": [
-                            "selectAllOrdersOutputCursor"
+                            "selectAllOrdersByDateInputCursor"
                         ]
                     },
                     "output": {
                         "path": [
+                            "response",
                             "orders"
                         ]
                     },
                     "children": [
                         {
                             "comments": "maps each cusor record to the orders Gloop model",
+                            "declare": [
+                                {
+                                    "variables": [
+                                        {
+                                            "name": "CUSTOM_FIELDS",
+                                            "required": true
+                                        }
+                                    ]
+                                }
+                            ],
                             "lines": [
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "order_id"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_ID"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
-                                        "orderId"
+                                        "customer",
+                                        "customerId"
                                     ]
                                 },
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "order_date_created"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_DATE_CREATED"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
+                                        "customer",
                                         "dateCreated"
                                     ]
                                 },
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "order_date_updated"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_DATE_UPDATED"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
+                                        "customer",
                                         "dateUpdated"
                                     ]
                                 },
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "status"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_NAME"
                                     ],
                                     "to": [
-                                        "orders",
-                                        "status"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_phone_number"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "customer",
-                                        "phoneNumber"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_email"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "customer",
-                                        "email"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_address"
-                                    ],
-                                    "to": [
-                                        "orders",
-                                        "customer",
-                                        "address"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_name"
-                                    ],
-                                    "to": [
+                                        "response",
                                         "orders",
                                         "customer",
                                         "name"
@@ -255,41 +252,89 @@
                                 },
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_date_updated"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_ADDRESS"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
-                                        "dateUpdated"
+                                        "address"
                                     ]
                                 },
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_date_created"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_EMAIL"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customer",
+                                        "email"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOMER_PHONE_NUMBER"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "customer",
+                                        "phoneNumber"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersByDateInputCursor",
+                                        "ORDER_ID"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "orderId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersByDateInputCursor",
+                                        "ORDER_DATE_CREATED"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
                                         "dateCreated"
                                     ]
                                 },
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "customer_id"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "ORDER_DATE_UPDATED"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
-                                        "customer",
-                                        "customerId"
+                                        "dateUpdated"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllOrdersByDateInputCursor",
+                                        "STATUS"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "orders",
+                                        "status"
                                     ]
                                 },
                                 {
                                     "type": "set",
                                     "expression": "0",
                                     "to": [
+                                        "response",
                                         "orders",
                                         "totalPrice"
                                     ]
@@ -307,8 +352,8 @@
                             "inputs": [
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "custom_fields"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "CUSTOM_FIELDS"
                                     ],
                                     "to": [
                                         "jsonString"
@@ -321,6 +366,7 @@
                                         "output"
                                     ],
                                     "to": [
+                                        "response",
                                         "orders",
                                         "customFields"
                                     ]
@@ -335,34 +381,34 @@
                                 {
                                     "variables": [
                                         {
-                                            "name": "selectAllOrderItemOutputCursor",
+                                            "name": "selectAllOrderItemInputCursor",
                                             "type": "model",
                                             "array": true,
                                             "gloopProperties": [
                                                 {
-                                                    "name": "id",
+                                                    "name": "ID",
                                                     "required": true,
                                                     "allowNull": false
                                                 },
                                                 {
-                                                    "name": "name",
+                                                    "name": "NAME",
                                                     "required": true,
                                                     "allowNull": false
                                                 },
                                                 {
-                                                    "name": "description",
+                                                    "name": "DESCRIPTION",
                                                     "required": true,
                                                     "allowNull": false
                                                 },
                                                 {
-                                                    "name": "quantity",
+                                                    "name": "QUANTITY",
                                                     "type": "integer",
                                                     "required": true,
                                                     "allowNull": false
                                                 },
                                                 {
-                                                    "name": "price",
-                                                    "type": "double",
+                                                    "name": "PRICE",
+                                                    "type": "bigDecimal",
                                                     "required": true
                                                 }
                                             ]
@@ -373,8 +419,8 @@
                             "inputs": [
                                 {
                                     "from": [
-                                        "selectAllOrdersOutputCursor",
-                                        "order_id"
+                                        "selectAllOrdersByDateInputCursor",
+                                        "ORDER_ID"
                                     ],
                                     "to": [
                                         "selectAllOrderItemInput",
@@ -385,10 +431,10 @@
                             "outputs": [
                                 {
                                     "from": [
-                                        "SelectAllOrderItemOutputCursor"
+                                        "selectAllOrderItemInputCursor"
                                     ],
                                     "to": [
-                                        "selectAllOrderItemOutputCursor"
+                                        "selectAllOrderItemInputCursor"
                                     ]
                                 }
                             ]
@@ -398,11 +444,12 @@
                             "comments": "Iterates through the order item cursor and then maps it to the order items array in the orders Gloop model",
                             "input": {
                                 "path": [
-                                    "selectAllOrderItemOutputCursor"
+                                    "selectAllOrderItemInputCursor"
                                 ]
                             },
                             "output": {
                                 "path": [
+                                    "response",
                                     "orders",
                                     "orderItems"
                                 ]
@@ -413,10 +460,11 @@
                                     "lines": [
                                         {
                                             "from": [
-                                                "selectAllOrderItemOutputCursor",
-                                                "id"
+                                                "selectAllOrderItemInputCursor",
+                                                "ID"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "id"
@@ -424,10 +472,11 @@
                                         },
                                         {
                                             "from": [
-                                                "selectAllOrderItemOutputCursor",
-                                                "name"
+                                                "selectAllOrderItemInputCursor",
+                                                "NAME"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "name"
@@ -435,10 +484,11 @@
                                         },
                                         {
                                             "from": [
-                                                "selectAllOrderItemOutputCursor",
-                                                "description"
+                                                "selectAllOrderItemInputCursor",
+                                                "DESCRIPTION"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
                                                 "description"
@@ -446,31 +496,34 @@
                                         },
                                         {
                                             "from": [
-                                                "selectAllOrderItemOutputCursor",
-                                                "price"
+                                                "selectAllOrderItemInputCursor",
+                                                "QUANTITY"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
-                                                "price"
+                                                "quantity"
                                             ]
                                         },
                                         {
                                             "from": [
-                                                "selectAllOrderItemOutputCursor",
-                                                "quantity"
+                                                "selectAllOrderItemInputCursor",
+                                                "PRICE"
                                             ],
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "orderItems",
-                                                "quantity"
+                                                "price"
                                             ]
                                         },
                                         {
                                             "type": "set",
-                                            "expression": "orders.totalPrice += selectAllOrderItemOutputCursor.price",
+                                            "expression": "response.orders.totalPrice += selectAllOrderItemInputCursor.PRICE",
                                             "evaluate": true,
                                             "to": [
+                                                "response",
                                                 "orders",
                                                 "totalPrice"
                                             ]
@@ -515,14 +568,6 @@
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
                             "expression": "500",
                             "to": [
                                 "responseCode"
@@ -530,10 +575,25 @@
                         },
                         {
                             "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
+                            "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

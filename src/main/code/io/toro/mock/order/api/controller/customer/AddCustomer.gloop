@@ -5,29 +5,45 @@
             "type": "model",
             "gloopProperties": [
                 {
-                    "name": "name"
+                    "name": "name",
+                    "comments": "The name of the customer."
                 },
                 {
-                    "name": "address"
+                    "name": "address",
+                    "comments": "The address of the customer."
                 },
                 {
-                    "name": "email"
+                    "name": "email",
+                    "comments": "The email address of the customer."
                 },
                 {
-                    "name": "phoneNumber"
+                    "name": "phoneNumber",
+                    "comments": "The customer's phone number."
                 }
             ]
         }
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "customer",
+                    "type": "model",
+                    "reference": "io.toro.mock.order.model.customer.Customer"
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -61,6 +77,16 @@
                     "type": "invokeGloop",
                     "comments": "Executes an `INSERT` query that adds a new customer record",
                     "name": "io.toro.mock.order.sql.customer.InsertCustomer",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "created",
+                                    "type": "boolean"
+                                }
+                            ]
+                        }
+                    ],
                     "inputs": [
                         {
                             "from": [
@@ -122,143 +148,165 @@
                         },
                         {
                             "type": "set",
-                            "expression": "SUCCESS",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "\"Successfully added customer with id \\\"${customerId}\\\".\"",
+                            "expression": "$gloopOutput.updateCount > 0",
                             "evaluate": true,
                             "to": [
-                                "APIResponse",
-                                "message"
-                            ],
-                            "priority": 1
+                                "created"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "created",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "true",
+                            "children": [
+                                {
+                                    "type": "invokeGloop",
+                                    "name": "io.toro.mock.order.api.controller.customer.GetCustomer",
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "customerId"
+                                            ],
+                                            "to": [
+                                                "customerId"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "from": [
+                                                "response",
+                                                "customer"
+                                            ],
+                                            "to": [
+                                                "response",
+                                                "customer"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "response",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Successfully added customer with id ${customerId}\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": "false",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "ERROR",
+                                            "to": [
+                                                "APIException",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "400",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "400",
+                                            "to": [
+                                                "APIException",
+                                                "httpErrorCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "Failed to create customer. Check the logs for more info.",
+                                            "to": [
+                                                "APIException",
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }
             ],
             "catch": [
                 {
-                    "type": "fork",
-                    "comments": "Check if it's an SQL constraint violation",
-                    "expression": "$gloopException.message.contains( 'java.sql.SQLIntegrityConstraintViolationException' )",
-                    "children": [
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
                         {
-                            "type": "invokeCode",
-                            "label": "true",
-                            "comments": "If the exception caught was an SQL constraint violation, set the response code to 400",
-                            "className": "io.toro.martini.LoggerMethods",
-                            "methodName": "error",
-                            "parameters": [
-                                "java.lang.String",
-                                "java.lang.Throwable"
+                            "from": [
+                                "$gloopException",
+                                "realException"
                             ],
-                            "inputs": [
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "realException"
-                                    ],
-                                    "to": [
-                                        "throwable"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "gloopStackTrace"
-                                    ],
-                                    "to": [
-                                        "message"
-                                    ]
-                                }
-                            ],
-                            "outputs": [
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "400",
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "$gloopException.message",
-                                    "evaluate": true,
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                }
+                            "to": [
+                                "throwable"
                             ]
                         },
                         {
-                            "type": "invokeCode",
-                            "label": "false",
-                            "comments": "else, set the response code to 500",
-                            "className": "io.toro.martini.LoggerMethods",
-                            "methodName": "error",
-                            "parameters": [
-                                "java.lang.String",
-                                "java.lang.Throwable"
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
                             ],
-                            "inputs": [
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "realException"
-                                    ],
-                                    "to": [
-                                        "throwable"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "gloopStackTrace"
-                                    ],
-                                    "to": [
-                                        "message"
-                                    ]
-                                }
-                            ],
-                            "outputs": [
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "500",
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "$gloopException.message",
-                                    "evaluate": true,
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                }
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

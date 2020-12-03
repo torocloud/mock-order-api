@@ -7,9 +7,16 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "customer",
+                    "type": "model",
+                    "reference": "io.toro.mock.order.model.customer.Customer"
+                }
+            ]
         },
         {
             "name": "responseCode",
@@ -17,9 +24,9 @@
             "defaultValue": 200
         },
         {
-            "name": "customer",
+            "name": "APIException",
             "type": "model",
-            "reference": "io.toro.mock.order.model.customer.Customer"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -49,28 +56,9 @@
                                 "CUSTOMER_ID"
                             ],
                             "to": [
+                                "response",
                                 "customer",
                                 "customerId"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectCustomerOutput",
-                                "DATE_CREATED"
-                            ],
-                            "to": [
-                                "customer",
-                                "dateCreated"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectCustomerOutput",
-                                "DATE_UPDATED"
-                            ],
-                            "to": [
-                                "customer",
-                                "dateUpdated"
                             ]
                         },
                         {
@@ -79,6 +67,7 @@
                                 "NAME"
                             ],
                             "to": [
+                                "response",
                                 "customer",
                                 "name"
                             ]
@@ -89,6 +78,7 @@
                                 "ADDRESS"
                             ],
                             "to": [
+                                "response",
                                 "customer",
                                 "address"
                             ]
@@ -99,6 +89,7 @@
                                 "EMAIL"
                             ],
                             "to": [
+                                "response",
                                 "customer",
                                 "email"
                             ]
@@ -109,15 +100,47 @@
                                 "PHONE_NUMBER"
                             ],
                             "to": [
+                                "response",
                                 "customer",
                                 "phoneNumber"
                             ]
                         },
                         {
-                            "type": "set",
-                            "expression": "200",
+                            "from": [
+                                "selectCustomerOutput",
+                                "DATE_CREATED"
+                            ],
                             "to": [
-                                "responseCode"
+                                "response",
+                                "customer",
+                                "dateCreated"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectCustomerOutput",
+                                "DATE_UPDATED"
+                            ],
+                            "to": [
+                                "response",
+                                "customer",
+                                "dateUpdated"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Customer record fetched successfully.",
+                            "to": [
+                                "response",
+                                "message"
                             ]
                         }
                     ]
@@ -125,7 +148,7 @@
                 {
                     "type": "fork",
                     "comments": "Check if a match is found",
-                    "expression": "customer?.customerId",
+                    "expression": "response.customer?.customerId",
                     "children": [
                         {
                             "type": "invokeCode",
@@ -139,7 +162,7 @@
                             "inputs": [
                                 {
                                     "type": "set",
-                                    "expression": "\"Customer with id \\\"${customerId}\\\" not found.\"",
+                                    "expression": "\"Customer with id ${customerId} not found or does not exist.\"",
                                     "evaluate": true,
                                     "to": [
                                         "message"
@@ -152,7 +175,7 @@
                                         "output"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "APIException",
                                         "message"
                                     ]
                                 },
@@ -167,8 +190,16 @@
                                     "type": "set",
                                     "expression": "ERROR",
                                     "to": [
-                                        "APIResponse",
+                                        "APIException",
                                         "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
                                     ]
                                 }
                             ]
@@ -218,16 +249,23 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
                                 "result"
                             ]
                         },
                         {
                             "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
+                            "expression": "500",
                             "to": [
-                                "APIResponse",
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

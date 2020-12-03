@@ -3,25 +3,31 @@
     "type": "model",
     "gloopProperties": [
         {
-            "name": "itemId"
+            "name": "itemId",
+            "comments": "The unique identifier for an inventory item."
         },
         {
             "name": "dateCreated",
-            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}"
+            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}",
+            "comments": "The date when the item was created."
         },
         {
             "name": "dateUpdated",
-            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}"
+            "outputExpression": "if ( !org.apache.commons.lang3.StringUtils.isEmpty( val ) ) {\n\tdef dateString = val.toString()\n\tdef dateFormat = 'EEE MMM dd HH:mm:ss zzz yyyy'\n\tdef longTimestamp = Date.parse( dateFormat, dateString ).time\n\t\n\treturn longTimestamp\n}",
+            "comments": "The date when the item was last updated."
         },
         {
-            "name": "name"
+            "name": "name",
+            "comments": "The name of the inventory item"
         },
         {
-            "name": "description"
+            "name": "description",
+            "comments": "The item's description."
         },
         {
             "name": "price",
-            "type": "float"
+            "type": "float",
+            "comments": "The price this item will be sold for."
         }
     ]
 }

@@ -8,29 +8,45 @@
             "type": "model",
             "gloopProperties": [
                 {
-                    "name": "name"
+                    "name": "name",
+                    "comments": "The name of the customer."
                 },
                 {
-                    "name": "address"
+                    "name": "address",
+                    "comments": "The customer's shipping or billing address."
                 },
                 {
-                    "name": "email"
+                    "name": "email",
+                    "comments": "The customer's email."
                 },
                 {
-                    "name": "phoneNumber"
+                    "name": "phoneNumber",
+                    "comments": "The customer's phone number"
                 }
             ]
         }
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.mock.order.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "customer",
+                    "type": "model",
+                    "reference": "io.toro.mock.order.model.customer.Customer"
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -42,26 +58,6 @@
                     "type": "invokeGloop",
                     "comments": "Retrieves the customer record to check if it exists",
                     "name": "io.toro.mock.order.api.controller.customer.GetCustomer",
-                    "declare": [
-                        {
-                            "variables": [
-                                {
-                                    "name": "serviceResponse",
-                                    "type": "model",
-                                    "gloopProperties": [
-                                        {
-                                            "name": "responseCode",
-                                            "type": "integer",
-                                            "defaultValue": 200
-                                        },
-                                        {
-                                            "name": "message"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
                     "inputs": [
                         {
                             "from": [
@@ -75,21 +71,18 @@
                     "outputs": [
                         {
                             "from": [
-                                "responseCode"
+                                "APIException"
                             ],
                             "to": [
-                                "serviceResponse",
-                                "responseCode"
+                                "APIException"
                             ]
                         },
                         {
                             "from": [
-                                "APIResponse",
-                                "message"
+                                "responseCode"
                             ],
                             "to": [
-                                "serviceResponse",
-                                "message"
+                                "responseCode"
                             ]
                         }
                     ]
@@ -97,98 +90,187 @@
                 {
                     "type": "fork",
                     "comments": "Is the customer record found?",
-                    "expression": "serviceResponse.responseCode == 200",
+                    "expression": "responseCode",
                     "children": [
                         {
-                            "type": "invokeGloop",
-                            "label": "true",
-                            "comments": "Executes an `UPDATE` query to update the fields/columns that was sent in the request",
-                            "name": "io.toro.mock.order.sql.customer.UpdateCustomer",
-                            "inputs": [
+                            "type": "block",
+                            "label": "200",
+                            "children": [
                                 {
-                                    "from": [
-                                        "customer",
-                                        "name"
+                                    "type": "invokeGloop",
+                                    "comments": "Executes an `UPDATE` query to update the fields/columns that was sent in the request",
+                                    "name": "io.toro.mock.order.sql.customer.UpdateCustomer",
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "updated",
+                                                    "type": "boolean"
+                                                }
+                                            ]
+                                        }
                                     ],
-                                    "to": [
-                                        "updateCustomerInput",
-                                        "name"
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "customer",
+                                                "name"
+                                            ],
+                                            "to": [
+                                                "updateCustomerInput",
+                                                "name"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "customer",
+                                                "address"
+                                            ],
+                                            "to": [
+                                                "updateCustomerInput",
+                                                "address"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "customer",
+                                                "email"
+                                            ],
+                                            "to": [
+                                                "updateCustomerInput",
+                                                "email"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "customer",
+                                                "phoneNumber"
+                                            ],
+                                            "to": [
+                                                "updateCustomerInput",
+                                                "phoneNumber"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "customerId"
+                                            ],
+                                            "to": [
+                                                "updateCustomerInput",
+                                                "customerId"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "200",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "$gloopOutput.updateCount > 0",
+                                            "evaluate": true,
+                                            "to": [
+                                                "updated"
+                                            ]
+                                        }
                                     ]
                                 },
                                 {
-                                    "from": [
-                                        "customer",
-                                        "address"
-                                    ],
-                                    "to": [
-                                        "updateCustomerInput",
-                                        "address"
+                                    "type": "fork",
+                                    "expression": "updated",
+                                    "children": [
+                                        {
+                                            "type": "invokeGloop",
+                                            "label": "true",
+                                            "name": "io.toro.mock.order.api.controller.customer.GetCustomer",
+                                            "inputs": [
+                                                {
+                                                    "from": [
+                                                        "customerId"
+                                                    ],
+                                                    "to": [
+                                                        "customerId"
+                                                    ]
+                                                }
+                                            ],
+                                            "outputs": [
+                                                {
+                                                    "from": [
+                                                        "response",
+                                                        "customer"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "customer"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "SUCCESS",
+                                                    "to": [
+                                                        "response",
+                                                        "result"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "Customer record updated successfully.",
+                                                    "to": [
+                                                        "response",
+                                                        "message"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "false",
+                                            "lines": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "ERROR",
+                                                    "to": [
+                                                        "APIException",
+                                                        "result"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "400",
+                                                    "to": [
+                                                        "APIException",
+                                                        "httpErrorCode"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "Customer record failed to update. Check Martini Logs for more info.",
+                                                    "to": [
+                                                        "APIException",
+                                                        "message"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "400",
+                                                    "to": [
+                                                        "responseCode"
+                                                    ]
+                                                }
+                                            ]
+                                        }
                                     ]
-                                },
-                                {
-                                    "from": [
-                                        "customer",
-                                        "email"
-                                    ],
-                                    "to": [
-                                        "updateCustomerInput",
-                                        "email"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "customer",
-                                        "phoneNumber"
-                                    ],
-                                    "to": [
-                                        "updateCustomerInput",
-                                        "phoneNumber"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "customerId"
-                                    ],
-                                    "to": [
-                                        "updateCustomerInput",
-                                        "customerId"
-                                    ]
-                                }
-                            ],
-                            "outputs": [
-                                {
-                                    "type": "set",
-                                    "expression": "SUCCESS",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "200",
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "\"Successfully updated details of customer with id \\\"${customerId}\\\".\"",
-                                    "evaluate": true,
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ],
-                                    "priority": 1
                                 }
                             ]
                         },
                         {
-                            "label": "false",
+                            "label": "$else",
                             "lines": [
                                 {
                                     "from": [
-                                        "serviceResponse",
                                         "responseCode"
                                     ],
                                     "to": [
@@ -197,19 +279,17 @@
                                 },
                                 {
                                     "from": [
-                                        "serviceResponse",
-                                        "message"
+                                        "APIException"
                                     ],
                                     "to": [
-                                        "APIResponse",
-                                        "message"
+                                        "APIException"
                                     ]
                                 },
                                 {
                                     "type": "set",
                                     "expression": "ERROR",
                                     "to": [
-                                        "APIResponse",
+                                        "APIException",
                                         "result"
                                     ]
                                 }
@@ -220,122 +300,56 @@
             ],
             "catch": [
                 {
-                    "type": "fork",
-                    "comments": "Check if it's an SQL constraint violation",
-                    "expression": "$gloopException.message.contains( 'java.sql.SQLIntegrityConstraintViolationException' )",
-                    "children": [
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
                         {
-                            "type": "invokeCode",
-                            "label": "true",
-                            "comments": "If the exception caught was an SQL constraint violation, set the response code to 400",
-                            "className": "io.toro.martini.LoggerMethods",
-                            "methodName": "error",
-                            "parameters": [
-                                "java.lang.String",
-                                "java.lang.Throwable"
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
                             ],
-                            "inputs": [
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "message"
-                                    ],
-                                    "to": [
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "realException"
-                                    ],
-                                    "to": [
-                                        "throwable"
-                                    ]
-                                }
-                            ],
-                            "outputs": [
-                                {
-                                    "from": [
-                                        "output"
-                                    ],
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "400",
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                }
+                            "to": [
+                                "message"
                             ]
                         },
                         {
-                            "type": "invokeCode",
-                            "label": "false",
-                            "comments": "else, set the response code to 500",
-                            "className": "io.toro.martini.LoggerMethods",
-                            "methodName": "error",
-                            "parameters": [
-                                "java.lang.String",
-                                "java.lang.Throwable"
+                            "from": [
+                                "$gloopException",
+                                "realException"
                             ],
-                            "inputs": [
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "message"
-                                    ],
-                                    "to": [
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "$gloopException",
-                                        "realException"
-                                    ],
-                                    "to": [
-                                        "throwable"
-                                    ]
-                                }
-                            ],
-                            "outputs": [
-                                {
-                                    "from": [
-                                        "output"
-                                    ],
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "500",
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                }
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

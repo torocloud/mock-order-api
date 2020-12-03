@@ -6,13 +6,18 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse"
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -24,26 +29,6 @@
                     "type": "invokeGloop",
                     "comments": "Retrieves the customer record to be deleted. To be sent later to the webhook configured in this package, if nay",
                     "name": "io.toro.mock.order.api.controller.customer.GetCustomer",
-                    "declare": [
-                        {
-                            "variables": [
-                                {
-                                    "name": "serviceResponse",
-                                    "type": "model",
-                                    "gloopProperties": [
-                                        {
-                                            "name": "responseCode",
-                                            "type": "integer",
-                                            "defaultValue": 200
-                                        },
-                                        {
-                                            "name": "message"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
                     "inputs": [
                         {
                             "from": [
@@ -60,18 +45,15 @@
                                 "responseCode"
                             ],
                             "to": [
-                                "serviceResponse",
                                 "responseCode"
                             ]
                         },
                         {
                             "from": [
-                                "APIResponse",
-                                "message"
+                                "APIException"
                             ],
                             "to": [
-                                "serviceResponse",
-                                "message"
+                                "APIException"
                             ]
                         }
                     ]
@@ -79,11 +61,11 @@
                 {
                     "type": "fork",
                     "comments": "Check if the customer is found",
-                    "expression": "serviceResponse.responseCode == 200",
+                    "expression": "responseCode",
                     "children": [
                         {
                             "type": "invokeGloop",
-                            "label": "true",
+                            "label": "200",
                             "comments": "Execute a `DELETE` query that removes a customer from the mock order API",
                             "name": "io.toro.mock.order.sql.customer.DeleteCustomer",
                             "inputs": [
@@ -100,59 +82,18 @@
                             "outputs": [
                                 {
                                     "type": "set",
-                                    "expression": "\"Successfully removed customer with id \\\"${customerId}\\\".\"",
-                                    "evaluate": true,
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
                                     "expression": "SUCCESS",
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "result"
                                     ]
                                 },
                                 {
                                     "type": "set",
-                                    "expression": "204",
+                                    "expression": "Customer record deleted successfully.",
                                     "to": [
-                                        "responseCode"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "label": "false",
-                            "comments": "Else, map an error response",
-                            "lines": [
-                                {
-                                    "from": [
-                                        "serviceResponse",
-                                        "responseCode"
-                                    ],
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "serviceResponse",
+                                        "response",
                                         "message"
-                                    ],
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
                                     ]
                                 }
                             ]
@@ -192,19 +133,17 @@
                     ],
                     "outputs": [
                         {
-                            "from": [
-                                "output"
-                            ],
+                            "type": "set",
+                            "expression": "500",
                             "to": [
-                                "APIResponse",
-                                "message"
+                                "responseCode"
                             ]
                         },
                         {
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
                                 "result"
                             ]
                         },
@@ -212,7 +151,16 @@
                             "type": "set",
                             "expression": "500",
                             "to": [
-                                "responseCode"
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

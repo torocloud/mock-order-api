@@ -22,14 +22,19 @@
     ],
     "output": [
         {
+            "name": "APIResponse",
+            "type": "model",
+            "reference": "io.toro.mock.order.model.APIResponse"
+        },
+        {
             "name": "responseCode",
             "type": "integer",
             "defaultValue": 200
         },
         {
-            "name": "APIResponse",
+            "name": "APIException",
             "type": "model",
-            "reference": "io.toro.mock.order.model.APIResponse"
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -40,26 +45,6 @@
                 {
                     "type": "invokeGloop",
                     "name": "io.toro.mock.order.api.controller.order.GetOrder",
-                    "declare": [
-                        {
-                            "variables": [
-                                {
-                                    "name": "serviceResponse",
-                                    "type": "model",
-                                    "gloopProperties": [
-                                        {
-                                            "name": "responseCode",
-                                            "type": "integer",
-                                            "defaultValue": 200
-                                        },
-                                        {
-                                            "name": "message"
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ],
                     "inputs": [
                         {
                             "from": [
@@ -76,18 +61,15 @@
                                 "responseCode"
                             ],
                             "to": [
-                                "serviceResponse",
                                 "responseCode"
                             ]
                         },
                         {
                             "from": [
-                                "APIResponse",
-                                "message"
+                                "APIException"
                             ],
                             "to": [
-                                "serviceResponse",
-                                "message"
+                                "APIException"
                             ]
                         }
                     ]
@@ -95,11 +77,11 @@
                 {
                     "type": "fork",
                     "comments": "Is the order record found?",
-                    "expression": "serviceResponse.responseCode == 200",
+                    "expression": "responseCode",
                     "children": [
                         {
                             "type": "invokeGloop",
-                            "label": "true",
+                            "label": "200",
                             "name": "io.toro.mock.order.sql.order.UpdateOrder",
                             "inputs": [
                                 {
@@ -124,7 +106,7 @@
                             "outputs": [
                                 {
                                     "type": "set",
-                                    "expression": "\"Successfully changed status of order with id \\\"${orderId}\\\" to \\\"${status}\\\".\"",
+                                    "expression": "\"Successfully changed status of order with id ${orderId} to ${status}.\"",
                                     "evaluate": true,
                                     "to": [
                                         "APIResponse",
@@ -144,44 +126,6 @@
                                     "expression": "200",
                                     "to": [
                                         "responseCode"
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "label": "false",
-                            "comments": "If the order does not exists, map an error response",
-                            "unload": [
-                                [
-                                    "serviceResponse"
-                                ]
-                            ],
-                            "lines": [
-                                {
-                                    "from": [
-                                        "serviceResponse",
-                                        "message"
-                                    ],
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "serviceResponse",
-                                        "responseCode"
-                                    ],
-                                    "to": [
-                                        "responseCode"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "ERROR",
-                                    "to": [
-                                        "APIResponse",
-                                        "result"
                                     ]
                                 }
                             ]
@@ -222,14 +166,6 @@
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
                             "expression": "500",
                             "to": [
                                 "responseCode"
@@ -237,10 +173,25 @@
                         },
                         {
                             "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
+                            "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

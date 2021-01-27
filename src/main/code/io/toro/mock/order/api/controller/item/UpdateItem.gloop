@@ -26,7 +26,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse",
             "gloopProperties": [
@@ -186,36 +186,36 @@
                                             ],
                                             "outputs": [
                                                 {
+                                                    "type": "set",
+                                                    "expression": "200",
+                                                    "to": [
+                                                        "responseCode"
+                                                    ]
+                                                },
+                                                {
                                                     "from": [
-                                                        "APIResponse",
+                                                        "response",
                                                         "item"
                                                     ],
                                                     "to": [
-                                                        "APIResponse",
+                                                        "response",
                                                         "item"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "Item updated successfully",
+                                                    "to": [
+                                                        "response",
+                                                        "message"
                                                     ]
                                                 },
                                                 {
                                                     "type": "set",
                                                     "expression": "SUCCESS",
                                                     "to": [
-                                                        "APIResponse",
+                                                        "response",
                                                         "result"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "set",
-                                                    "expression": "Item updated successfully.",
-                                                    "to": [
-                                                        "APIResponse",
-                                                        "message"
-                                                    ]
-                                                },
-                                                {
-                                                    "type": "set",
-                                                    "expression": "200",
-                                                    "to": [
-                                                        "responseCode"
                                                     ]
                                                 }
                                             ]

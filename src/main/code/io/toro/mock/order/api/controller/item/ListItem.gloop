@@ -1,7 +1,7 @@
 {
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse",
             "gloopProperties": [
@@ -105,7 +105,7 @@
                     },
                     "output": {
                         "path": [
-                            "APIResponse",
+                            "response",
                             "item"
                         ]
                     },
@@ -119,7 +119,7 @@
                                         "ITEM_ID"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "item",
                                         "itemId"
                                     ]
@@ -130,7 +130,7 @@
                                         "ITEM_NAME"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "item",
                                         "name"
                                     ]
@@ -141,7 +141,7 @@
                                         "ITEM_DESCRIPTION"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "item",
                                         "description"
                                     ]
@@ -152,7 +152,7 @@
                                         "PRICE"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "item",
                                         "price"
                                     ]
@@ -163,7 +163,7 @@
                                         "DATE_CREATED"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "item",
                                         "dateCreated"
                                     ]
@@ -174,7 +174,7 @@
                                         "DATE_UPDATED"
                                     ],
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "item",
                                         "dateUpdated"
                                     ]
@@ -189,7 +189,7 @@
                             "type": "set",
                             "expression": "SUCCESS",
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "result"
                             ]
                         },
@@ -197,7 +197,7 @@
                             "type": "set",
                             "expression": "Successfully fetched items.",
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "message"
                             ]
                         }
@@ -240,23 +240,6 @@
                             "expression": "500",
                             "to": [
                                 "responseCode"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "$gloopException.message",
-                            "evaluate": true,
-                            "to": [
-                                "APIResponse",
-                                "message"
                             ]
                         },
                         {

@@ -1,7 +1,4 @@
 {
-    "authTypes": [
-        "BASIC"
-    ],
     "groups": [
         "ESBAPIAdminGroup"
     ],
@@ -27,7 +24,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the request is successful, the API returns a list of all inventory items.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -65,7 +62,7 @@
                 },
                 "responses": {
                     "201": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the request is successful.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -144,7 +141,7 @@
                 },
                 "responses": {
                     "201": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the order was created.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -435,7 +432,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the request is successful, returns the inventory item record that matches the given `itemId`",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -481,7 +478,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the request is successful, removes an inventory item record in the API.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -534,7 +531,7 @@
                 },
                 "responses": {
                     "200": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the inventory item was updated successfully.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -637,7 +634,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the request is successful.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",
@@ -798,7 +795,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "APIResponse",
+                        "body": "response",
                         "description": "If the request is successful.",
                         "responseBodyMockData": {
                             "mockDataType": "JSON",

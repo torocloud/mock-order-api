@@ -6,7 +6,7 @@
 
     <groupId>com.torocloud</groupId>
     <artifactId>mock-order-api</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <rootDir>${basedir}</rootDir>

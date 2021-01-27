@@ -25,7 +25,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse",
             "gloopProperties": [
@@ -138,18 +138,18 @@
                         },
                         {
                             "type": "set",
-                            "expression": "SUCCESS",
-                            "to": [
-                                "APIResponse",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
                             "expression": "$gloopOutput.updateCount > 0",
                             "evaluate": true,
                             "to": [
                                 "created"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
                             ]
                         }
                     ]
@@ -177,12 +177,19 @@
                                     ],
                                     "outputs": [
                                         {
+                                            "type": "set",
+                                            "expression": "201",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
                                             "from": [
-                                                "APIResponse",
+                                                "response",
                                                 "item"
                                             ],
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "item"
                                             ]
                                         },
@@ -190,7 +197,7 @@
                                             "type": "set",
                                             "expression": "SUCCESS",
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "result"
                                             ]
                                         },
@@ -199,15 +206,8 @@
                                             "expression": "\"Successfully added new item with id ${itemId}.\"",
                                             "evaluate": true,
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "message"
-                                            ]
-                                        },
-                                        {
-                                            "type": "set",
-                                            "expression": "201",
-                                            "to": [
-                                                "responseCode"
                                             ]
                                         }
                                     ]

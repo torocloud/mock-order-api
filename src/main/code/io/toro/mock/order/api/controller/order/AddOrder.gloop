@@ -31,7 +31,7 @@
                     ]
                 },
                 {
-                    "name": "orderItem",
+                    "name": "orderItems",
                     "type": "model",
                     "array": true,
                     "comments": "A list of ordered items",
@@ -56,7 +56,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse",
             "allowExtraProperties": true,
@@ -224,14 +224,6 @@
                                     "outputs": [
                                         {
                                             "type": "set",
-                                            "expression": "SUCCESS",
-                                            "to": [
-                                                "APIResponse",
-                                                "result"
-                                            ]
-                                        },
-                                        {
-                                            "type": "set",
                                             "expression": "201",
                                             "to": [
                                                 "responseCode"
@@ -250,10 +242,17 @@
                                             "expression": "\"Successfully created Order with id {orderId}.\"",
                                             "evaluate": true,
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "message"
-                                            ],
-                                            "priority": 1
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "response",
+                                                "result"
+                                            ]
                                         }
                                     ]
                                 },
@@ -326,7 +325,7 @@
                                                     "input": {
                                                         "path": [
                                                             "order",
-                                                            "orderItem"
+                                                            "orderItems"
                                                         ]
                                                     },
                                                     "output": {
@@ -340,33 +339,11 @@
                                                             "lines": [
                                                                 {
                                                                     "from": [
-                                                                        "order",
-                                                                        "orderItem",
-                                                                        "itemId"
-                                                                    ],
-                                                                    "to": [
-                                                                        "insertMultipleOrderItemOutputCursor",
-                                                                        "itemId"
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "from": [
                                                                         "orderId"
                                                                     ],
                                                                     "to": [
                                                                         "insertMultipleOrderItemOutputCursor",
                                                                         "orderId"
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "from": [
-                                                                        "order",
-                                                                        "orderItem",
-                                                                        "quantity"
-                                                                    ],
-                                                                    "to": [
-                                                                        "insertMultipleOrderItemOutputCursor",
-                                                                        "quantity"
                                                                     ]
                                                                 },
                                                                 {
@@ -376,6 +353,28 @@
                                                                     "to": [
                                                                         "insertMultipleOrderItemOutputCursor",
                                                                         "id"
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "from": [
+                                                                        "order",
+                                                                        "orderItems",
+                                                                        "itemId"
+                                                                    ],
+                                                                    "to": [
+                                                                        "insertMultipleOrderItemOutputCursor",
+                                                                        "itemId"
+                                                                    ]
+                                                                },
+                                                                {
+                                                                    "from": [
+                                                                        "order",
+                                                                        "orderItems",
+                                                                        "quantity"
+                                                                    ],
+                                                                    "to": [
+                                                                        "insertMultipleOrderItemOutputCursor",
+                                                                        "quantity"
                                                                     ]
                                                                 }
                                                             ]
@@ -412,25 +411,25 @@
                                                 "order"
                                             ],
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "order"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Successfully created order with id ${response.order.orderId}.\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "message"
                                             ]
                                         },
                                         {
                                             "type": "set",
                                             "expression": "SUCCESS",
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "result"
-                                            ]
-                                        },
-                                        {
-                                            "type": "set",
-                                            "expression": "\"Successfully created order with id ${APIResponse.order.orderId}.\"",
-                                            "evaluate": true,
-                                            "to": [
-                                                "APIResponse",
-                                                "message"
                                             ]
                                         }
                                     ]

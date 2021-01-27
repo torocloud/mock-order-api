@@ -6,7 +6,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse",
             "gloopProperties": [
@@ -50,47 +50,21 @@
                     ],
                     "outputs": [
                         {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
                             "from": [
                                 "selectItemOutput",
                                 "ITEM_ID"
                             ],
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "item",
                                 "itemId"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectItemOutput",
-                                "ITEM_NAME"
-                            ],
-                            "to": [
-                                "APIResponse",
-                                "item",
-                                "name"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectItemOutput",
-                                "ITEM_DESCRIPTION"
-                            ],
-                            "to": [
-                                "APIResponse",
-                                "item",
-                                "description"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectItemOutput",
-                                "PRICE"
-                            ],
-                            "to": [
-                                "APIResponse",
-                                "item",
-                                "price"
                             ]
                         },
                         {
@@ -99,7 +73,7 @@
                                 "DATE_CREATED"
                             ],
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "item",
                                 "dateCreated"
                             ]
@@ -110,23 +84,49 @@
                                 "DATE_UPDATED"
                             ],
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "item",
                                 "dateUpdated"
                             ]
                         },
                         {
-                            "type": "set",
-                            "expression": "200",
+                            "from": [
+                                "selectItemOutput",
+                                "ITEM_DESCRIPTION"
+                            ],
                             "to": [
-                                "responseCode"
+                                "response",
+                                "item",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemOutput",
+                                "ITEM_NAME"
+                            ],
+                            "to": [
+                                "response",
+                                "item",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectItemOutput",
+                                "PRICE"
+                            ],
+                            "to": [
+                                "response",
+                                "item",
+                                "price"
                             ]
                         },
                         {
                             "type": "set",
                             "expression": "SUCCESS",
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "result"
                             ]
                         },
@@ -134,7 +134,7 @@
                             "type": "set",
                             "expression": "Item fetched successfully.",
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "message"
                             ]
                         }

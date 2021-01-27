@@ -6,7 +6,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse"
         },
@@ -129,15 +129,6 @@
                             ],
                             "outputs": [
                                 {
-                                    "from": [
-                                        "output"
-                                    ],
-                                    "to": [
-                                        "APIResponse",
-                                        "message"
-                                    ]
-                                },
-                                {
                                     "type": "set",
                                     "expression": "404",
                                     "to": [
@@ -145,10 +136,19 @@
                                     ]
                                 },
                                 {
+                                    "from": [
+                                        "output"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "message"
+                                    ]
+                                },
+                                {
                                     "type": "set",
                                     "expression": "ERROR",
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "result"
                                     ]
                                 }
@@ -199,7 +199,7 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "result"
                             ]
                         },
@@ -208,7 +208,7 @@
                             "expression": "$gloopException.message",
                             "evaluate": true,
                             "to": [
-                                "APIResponse",
+                                "response",
                                 "message"
                             ]
                         }

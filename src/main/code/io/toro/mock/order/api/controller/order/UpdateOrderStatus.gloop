@@ -22,7 +22,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse"
         },
@@ -106,10 +106,17 @@
                             "outputs": [
                                 {
                                     "type": "set",
+                                    "expression": "200",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
                                     "expression": "\"Successfully changed status of order with id ${orderId} to ${status}.\"",
                                     "evaluate": true,
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "message"
                                     ]
                                 },
@@ -117,15 +124,8 @@
                                     "type": "set",
                                     "expression": "SUCCESS",
                                     "to": [
-                                        "APIResponse",
+                                        "response",
                                         "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "200",
-                                    "to": [
-                                        "responseCode"
                                     ]
                                 }
                             ]

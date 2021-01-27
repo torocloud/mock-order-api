@@ -8,7 +8,7 @@
     ],
     "output": [
         {
-            "name": "APIResponse",
+            "name": "response",
             "type": "model",
             "reference": "io.toro.mock.order.model.APIResponse"
         },
@@ -111,10 +111,9 @@
                                     "outputs": [
                                         {
                                             "type": "set",
-                                            "expression": "SUCCESS",
+                                            "expression": "200",
                                             "to": [
-                                                "APIResponse",
-                                                "result"
+                                                "responseCode"
                                             ]
                                         },
                                         {
@@ -122,15 +121,16 @@
                                             "expression": "\"Successfully deleted order with id ${orderId}.\"",
                                             "evaluate": true,
                                             "to": [
-                                                "APIResponse",
+                                                "response",
                                                 "message"
                                             ]
                                         },
                                         {
                                             "type": "set",
-                                            "expression": "200",
+                                            "expression": "SUCCESS",
                                             "to": [
-                                                "responseCode"
+                                                "response",
+                                                "result"
                                             ]
                                         }
                                     ]
